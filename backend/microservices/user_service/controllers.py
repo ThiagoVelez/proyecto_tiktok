@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 from typing import Optional
 
 from backend.core.database import get_db, UserModel
 from backend.core.security import get_current_user, get_current_user_optional
 from backend.core.response import ApiResponse
+from backend.core.limiter import limiter
+from backend.core.config import settings
 from .schemas import (
     UserProfileUpdate, UserProfileView, SetParentalPinRequest,
     VerifyParentalPinRequest, ParentalSettingsUpdate, ParentalStatusResponse,
@@ -79,7 +81,9 @@ def get_linked_children(
 
 
 @router.post("/parental/pin", response_model=ApiResponse[dict])
+@limiter.limit(settings.RATE_LIMIT_PIN_PER_MINUTE)
 def set_parental_pin(
+    request: Request,
     req: SetParentalPinRequest,
     current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -91,12 +95,14 @@ def set_parental_pin(
 
 
 @router.post("/parental/pin/verify", response_model=ApiResponse[dict])
+@limiter.limit(settings.RATE_LIMIT_PIN_PER_MINUTE)
 def verify_parental_pin(
+    request: Request,
     req: VerifyParentalPinRequest,
     current_user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Valida el código PIN parental para desbloquear funciones restringidas."""
+    """Valida el código PIN parental para desbloquear funciones restringidas con protección anti-fuerza bruta."""
     service = UserService(db)
     res = service.verify_parental_pin(current_user.id, req)
     return ApiResponse.success_response(data=res, message=res["message"])
@@ -134,4 +140,3 @@ def update_parental_settings(
     service = UserService(db)
     updated = service.update_parental_settings(current_user.id, req)
     return ApiResponse.success_response(data=updated, message="Configuración parental guardada.")
-

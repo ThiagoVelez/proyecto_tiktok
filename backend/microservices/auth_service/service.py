@@ -3,10 +3,13 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from backend.core.database import UserModel, ParentalControlModel
-from backend.core.security import hash_password, verify_password, create_access_token
+from backend.core.security import (
+    hash_password, verify_password, create_access_token, create_refresh_token,
+    decode_access_token, revoke_token, is_token_revoked
+)
 from backend.core.config import settings
 from backend.reglas.parental_control import ParentalControlManager
-from .schemas import RegisterRequest, LoginRequest, AuthResponseData, UserSummary, TokenData
+from .schemas import RegisterRequest, LoginRequest, RefreshTokenRequest, AuthResponseData, UserSummary, TokenData
 
 
 class AuthService:
@@ -69,10 +72,10 @@ class AuthService:
             self.db.add(parental_config)
             self.db.commit()
 
-        # 6. Generar JWT
-        token = create_access_token(
-            data={"sub": str(new_user.id), "username": new_user.username, "role": new_user.role}
-        )
+        # 6. Generar Access Token y Refresh Token
+        token_data = {"sub": str(new_user.id), "username": new_user.username, "role": new_user.role}
+        access_token = create_access_token(data=token_data)
+        refresh_token = create_refresh_token(data=token_data)
 
         user_summary = UserSummary(
             id=new_user.id,
@@ -91,7 +94,8 @@ class AuthService:
         return AuthResponseData(
             user=user_summary,
             token=TokenData(
-                access_token=token,
+                access_token=access_token,
+                refresh_token=refresh_token,
                 token_type="bearer",
                 expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
             )
@@ -115,9 +119,9 @@ class AuthService:
             )
 
         user_age = ParentalControlManager.calculate_user_age(user.birth_date)
-        token = create_access_token(
-            data={"sub": str(user.id), "username": user.username, "role": user.role}
-        )
+        token_data = {"sub": str(user.id), "username": user.username, "role": user.role}
+        access_token = create_access_token(data=token_data)
+        refresh_token = create_refresh_token(data=token_data)
 
         user_summary = UserSummary(
             id=user.id,
@@ -136,8 +140,69 @@ class AuthService:
         return AuthResponseData(
             user=user_summary,
             token=TokenData(
-                access_token=token,
+                access_token=access_token,
+                refresh_token=refresh_token,
                 token_type="bearer",
                 expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
             )
         )
+
+    def refresh(self, req: RefreshTokenRequest) -> AuthResponseData:
+        """Valida el Refresh Token, revoca el token anterior e intercambia por un nuevo par de tokens."""
+        if is_token_revoked(req.refresh_token):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="El Refresh Token ha sido revocado. Inicia sesión nuevamente."
+            )
+
+        payload = decode_access_token(req.refresh_token)
+        if not payload or payload.get("type") != "refresh" or "sub" not in payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh Token inválido o expirado."
+            )
+
+        user_id = payload["sub"]
+        user = self.db.query(UserModel).filter(UserModel.id == user_id, UserModel.is_active == True).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado o cuenta inactiva."
+            )
+
+        # Rotación de tokens: Revocar el refresh token previo
+        revoke_token(req.refresh_token)
+
+        # Generar nuevos tokens
+        token_data = {"sub": str(user.id), "username": user.username, "role": user.role}
+        new_access_token = create_access_token(data=token_data)
+        new_refresh_token = create_refresh_token(data=token_data)
+
+        user_age = ParentalControlManager.calculate_user_age(user.birth_date)
+        user_summary = UserSummary(
+            id=user.id,
+            username=user.username,
+            email=user.email,
+            full_name=user.full_name,
+            birth_date=user.birth_date,
+            role=user.role,
+            account_type=user.account_type,
+            is_minor=(user_age < 18),
+            is_verified=user.is_verified,
+            avatar_url=user.avatar_url,
+            created_at=user.created_at
+        )
+
+        return AuthResponseData(
+            user=user_summary,
+            token=TokenData(
+                access_token=new_access_token,
+                refresh_token=new_refresh_token,
+                token_type="bearer",
+                expires_in_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+            )
+        )
+
+    def logout(self, token: str) -> bool:
+        """Invalida el token en la lista negra para forzar el cierre de sesión."""
+        return revoke_token(token)

@@ -12,6 +12,8 @@ from backend.core.config import settings
 from backend.core.database import get_db, UserModel
 from backend.core.security import get_current_user, get_current_user_optional
 from backend.core.response import ApiResponse
+from backend.core.limiter import limiter
+from backend.core.storage import validate_file_magic_bytes
 from .schemas import VideoCreateRequest, VideoDetail, FeedResponse, MediaUploadResponse
 from .service import VideoService
 
@@ -103,14 +105,16 @@ def _send_bytes_range_response(file_path: Path, range_header: Optional[str], is_
 
 
 @router.post("/upload-media", response_model=ApiResponse[MediaUploadResponse], status_code=status.HTTP_201_CREATED)
+@limiter.limit(settings.RATE_LIMIT_UPLOAD_PER_MINUTE)
 async def upload_media_file(
+    request: Request,
     file: UploadFile = File(...),
     media_type: str = Query("video", description="video, thumbnail o avatar"),
     current_user: UserModel = Depends(get_current_user)
 ):
     """
     Sube un archivo multimedia real (Video MP4/WebM o Imagen JPG/PNG/WebP).
-    Valida tamaño y extensión, almacenando en el servidor para servir al Frontend.
+    Valida firma binaria (magic bytes), tamaño y extensión, almacenando en el servidor para servir al Frontend.
     """
     ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""
     if media_type == "video":
@@ -130,6 +134,18 @@ async def upload_media_file(
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="media_type no válido. Use 'video', 'thumbnail' o 'avatar'.")
 
+    # Validación de Magic Bytes
+    first_chunk = await file.read(1024)
+    if not first_chunk:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El archivo subido está vacío.")
+
+    media_category = "video" if media_type == "video" else "image"
+    if not validate_file_magic_bytes(first_chunk, media_category):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Firma binaria del archivo no válida o contenido corrupto."
+        )
+
     target_dir = Path(settings.UPLOAD_DIR) / subdir
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -137,8 +153,9 @@ async def upload_media_file(
     destination_path = target_dir / safe_name
 
     max_size_bytes = settings.MAX_VIDEO_SIZE_MB * 1024 * 1024
-    total_bytes = 0
+    total_bytes = len(first_chunk)
     with open(destination_path, "wb") as buffer:
+        buffer.write(first_chunk)
         while chunk := await file.read(1024 * 1024):
             total_bytes += len(chunk)
             if total_bytes > max_size_bytes:
@@ -178,7 +195,9 @@ def upload_video(
 
 
 @router.post("/publish", response_model=ApiResponse[VideoDetail], status_code=status.HTTP_201_CREATED)
+@limiter.limit(settings.RATE_LIMIT_UPLOAD_PER_MINUTE)
 async def publish_video_direct(
+    request: Request,
     video_file: UploadFile = File(..., description="Archivo de video MP4, WebM o MOV"),
     thumbnail_file: Optional[UploadFile] = File(None, description="Imagen miniatura opcional"),
     title: str = Form(..., max_length=150, description="Título del video"),
@@ -204,14 +223,25 @@ async def publish_video_direct(
             detail=f"Formato de video no permitido. Válidos: {', '.join(settings.ALLOWED_VIDEO_EXTENSIONS)}"
         )
 
+    v_first_chunk = await video_file.read(1024)
+    if not v_first_chunk:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El archivo de video está vacío.")
+
+    if not validate_file_magic_bytes(v_first_chunk, "video"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Firma binaria del video no válida o contenido corrupto."
+        )
+
     video_dir = Path(settings.UPLOAD_DIR) / "videos"
     video_dir.mkdir(parents=True, exist_ok=True)
     safe_v_name = f"vid_{uuid4().hex[:12]}_{re.sub(r'[^a-zA-Z0-9_.-]', '', video_file.filename)}"
     v_dest_path = video_dir / safe_v_name
 
     max_size_bytes = settings.MAX_VIDEO_SIZE_MB * 1024 * 1024
-    total_v_bytes = 0
+    total_v_bytes = len(v_first_chunk)
     with open(v_dest_path, "wb") as buffer:
+        buffer.write(v_first_chunk)
         while chunk := await video_file.read(1024 * 1024):
             total_v_bytes += len(chunk)
             if total_v_bytes > max_size_bytes:
@@ -236,9 +266,18 @@ async def publish_video_direct(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Formato de miniatura no permitido. Válidos: {', '.join(settings.ALLOWED_IMAGE_EXTENSIONS)}"
             )
+
+        t_first_chunk = await thumbnail_file.read(1024)
+        if not t_first_chunk or not validate_file_magic_bytes(t_first_chunk, "image"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Firma binaria de la miniatura no válida o contenido corrupto."
+            )
+
         safe_t_name = f"thumb_{uuid4().hex[:12]}_{re.sub(r'[^a-zA-Z0-9_.-]', '', thumbnail_file.filename)}"
         t_dest_path = thumb_dir / safe_t_name
         with open(t_dest_path, "wb") as buffer:
+            buffer.write(t_first_chunk)
             while chunk := await thumbnail_file.read(1024 * 1024):
                 buffer.write(chunk)
         thumbnail_url = f"/uploads/thumbnails/{safe_t_name}"

@@ -7,13 +7,15 @@ import re
 from pathlib import Path
 from uuid import uuid4
 from typing import Optional, List
-from fastapi import APIRouter, Depends, Query, status, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, Query, status, UploadFile, File, Form, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from backend.core.config import settings
 from backend.core.database import get_db, UserModel
 from backend.core.security import get_current_user, get_current_user_optional
 from backend.core.response import ApiResponse
+from backend.core.limiter import limiter
+from backend.core.storage import validate_file_magic_bytes
 from .schemas import (
     StoryCreateRequest, StoryDetail, StoryFeedResponse,
     StoryViewersResponse
@@ -24,7 +26,9 @@ router = APIRouter(prefix="/stories", tags=["Historias (Stories 24h)"])
 
 
 @router.post("/publish", response_model=ApiResponse[StoryDetail], status_code=status.HTTP_201_CREATED)
+@limiter.limit(settings.RATE_LIMIT_UPLOAD_PER_MINUTE)
 async def publish_story_file(
+    request: Request,
     file: UploadFile = File(...),
     caption: Optional[str] = Form(None),
     media_type: str = Form("auto", description="'video', 'image' o 'auto'"),
@@ -51,6 +55,17 @@ async def publish_story_file(
     else:
         detected_type = media_type
 
+    first_chunk = await file.read(1024)
+    if not first_chunk:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El archivo de historia está vacío.")
+
+    media_category = "video" if detected_type == "video" else "image"
+    if not validate_file_magic_bytes(first_chunk, media_category):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Firma binaria del archivo no válida o contenido corrupto."
+        )
+
     stories_dir = Path(settings.UPLOAD_DIR) / "stories"
     stories_dir.mkdir(parents=True, exist_ok=True)
 
@@ -58,9 +73,10 @@ async def publish_story_file(
     destination_path = stories_dir / safe_name
 
     max_size_bytes = settings.MAX_VIDEO_SIZE_MB * 1024 * 1024
-    total_bytes = 0
+    total_bytes = len(first_chunk)
 
     with open(destination_path, "wb") as buffer:
+        buffer.write(first_chunk)
         while chunk := await file.read(1024 * 1024):
             total_bytes += len(chunk)
             if total_bytes > max_size_bytes:
