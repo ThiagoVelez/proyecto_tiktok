@@ -12,8 +12,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Entorno virtual aislado para evitar advertencias de pip y asegurar portabilidad
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Etapa 2: Imagen Final Runtime
 FROM python:3.12-slim AS runtime
@@ -26,9 +31,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar dependencias compiladas desde el builder
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+# Copiar dependencias compiladas en entorno virtual accesible para cualquier usuario
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Variables de entorno de ejecución Python
 ENV PYTHONDONTWRITEBYTECODE=1 \
