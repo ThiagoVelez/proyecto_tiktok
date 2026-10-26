@@ -218,7 +218,21 @@ export const getVideoComments = async (videoId: number): Promise<Comment[]> => {
     });
     const result = await res.json();
     if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-      return result.data;
+      return result.data.map((c: any) => {
+        const u = c.user || c.author || {
+          id: c.user_id || 0,
+          username: 'usuario',
+          avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+          is_verified: false
+        };
+        return {
+          ...c,
+          user: u,
+          author: u,
+          likes_count: typeof c.likes_count === 'number' ? c.likes_count : 0,
+          created_at: c.created_at || 'Reciente'
+        };
+      });
     }
   } catch (error) {
     console.warn('Usando comentarios iniciales de UI:', error);
@@ -293,7 +307,20 @@ export const postVideoComment = async (videoId: number, content: string): Promis
     });
     const result = await res.json();
     if (result.success && result.data) {
-      return result.data;
+      const c = result.data;
+      const u = c.user || c.author || {
+        id: 7,
+        username: 'valeria_creatrix',
+        avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+        is_verified: true
+      };
+      return {
+        ...c,
+        user: u,
+        author: u,
+        likes_count: c.likes_count || 0,
+        created_at: 'Ahora mismo'
+      };
     }
   } catch (error) {
     console.warn('Simulando comentario nuevo:', error);

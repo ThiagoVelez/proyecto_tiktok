@@ -62,16 +62,22 @@ export interface Video {
 export interface Comment {
   id: number;
   video_id: number;
-  user_id: number;
+  user_id?: number;
   content: string;
   likes_count: number;
   created_at: string;
-  user: {
+  user?: {
     id: number;
     username: string;
     avatar_url: string;
     is_verified?: boolean;
     is_creator?: boolean;
+  };
+  author?: {
+    id: number;
+    username: string;
+    avatar_url: string;
+    is_verified?: boolean;
   };
   is_pinned?: boolean;
   is_liked?: boolean;

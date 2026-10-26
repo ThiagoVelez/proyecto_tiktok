@@ -398,44 +398,56 @@ export const FeedPage: React.FC = () => {
 
           {/* Lista de Comentarios Scrollable */}
           <div className="flex-1 overflow-y-auto py-3 space-y-4 pr-1">
-            {comments.map((c) => (
-              <div key={c.id} className="space-y-1 text-xs">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-start gap-2.5">
-                    <img src={c.user.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-white">{c.user.username}</span>
-                        {c.user.is_verified && <CheckCircle className="w-3 h-3 text-cyan-400 inline" />}
-                        {c.is_pinned && (
-                          <span className="text-[9px] font-extrabold uppercase px-1.5 bg-pink-600/30 text-pink-300 rounded border border-pink-500/30">
-                            CREADOR
-                          </span>
-                        )}
-                        <span className="text-[10px] text-gray-500 ml-1">{c.created_at}</span>
-                      </div>
-                      <p className="text-gray-200 text-xs mt-1 leading-snug">{c.content}</p>
+            {comments.map((c) => {
+              const commentAuthor = c.user || (c as any).author || {
+                username: 'usuario',
+                avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+                is_verified: false
+              };
+              const likesFormatted = typeof c.likes_count === 'number' ? c.likes_count.toLocaleString() : '0';
+              return (
+                <div key={c.id} className="space-y-1 text-xs">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2.5">
+                      <img 
+                        src={commentAuthor.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
+                        alt={commentAuthor.username || 'Usuario'} 
+                        className="w-7 h-7 rounded-full object-cover flex-shrink-0" 
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-white">{commentAuthor.username || 'usuario'}</span>
+                          {commentAuthor.is_verified && <CheckCircle className="w-3 h-3 text-cyan-400 inline" />}
+                          {c.is_pinned && (
+                            <span className="text-[9px] font-extrabold uppercase px-1.5 bg-pink-600/30 text-pink-300 rounded border border-pink-500/30">
+                              CREADOR
+                            </span>
+                          )}
+                          <span className="text-[10px] text-gray-500 ml-1">{c.created_at || 'Reciente'}</span>
+                        </div>
+                        <p className="text-gray-200 text-xs mt-1 leading-snug">{c.content}</p>
 
-                      <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
-                        {c.is_pinned && (
-                          <span className="flex items-center gap-1 text-pink-400 font-semibold">
-                            <Pin className="w-3 h-3" />
-                            Fijado
-                          </span>
-                        )}
-                        <button className="hover:text-white font-medium">Responder</button>
+                        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
+                          {c.is_pinned && (
+                            <span className="flex items-center gap-1 text-pink-400 font-semibold">
+                              <Pin className="w-3 h-3" />
+                              Fijado
+                            </span>
+                          )}
+                          <button className="hover:text-white font-medium">Responder</button>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Likes del comentario */}
-                  <button className="flex flex-col items-center text-gray-400 hover:text-rose-400 flex-shrink-0">
-                    <Heart className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-mono">{c.likes_count.toLocaleString()}</span>
-                  </button>
+                    {/* Likes del comentario */}
+                    <button className="flex flex-col items-center text-gray-400 hover:text-rose-400 flex-shrink-0">
+                      <Heart className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-mono">{likesFormatted}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Reacciones Rápidas con Iconos Profesionales Lucide */}
