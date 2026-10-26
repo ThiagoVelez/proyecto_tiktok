@@ -5,7 +5,7 @@ Incluye soporte para MySQL, Redis, Object Storage (S3/MinIO), Rate Limiting y Se
 
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic_settings import BaseSettings
 from pydantic import Field, field_validator
 
@@ -20,10 +20,11 @@ class Settings(BaseSettings):
 
     # Red y Servidor
     PORT: int = 8000
-    HOST: str = "127.0.0.1"
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173"]
+    HOST: str = "0.0.0.0"
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "http://127.0.0.1:5173"]
 
     # MySQL Database Config
+    DATABASE_URL: Optional[str] = None
     DB_HOST: str = "127.0.0.1"
     DB_PORT: int = 3306
     DB_USER: str = "root"
@@ -74,6 +75,11 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         """Genera el Connection String para SQLAlchemy con driver PyMySQL."""
+        if self.DATABASE_URL:
+            url = str(self.DATABASE_URL)
+            if url.startswith("mysql://"):
+                url = url.replace("mysql://", "mysql+pymysql://", 1)
+            return url
         pwd = f":{self.DB_PASSWORD}" if self.DB_PASSWORD else ""
         return f"mysql+pymysql://{self.DB_USER}{pwd}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}?charset=utf8mb4"
 
