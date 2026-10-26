@@ -1187,7 +1187,7 @@ export const ProfilePage: React.FC = () => {
           </button>
 
           <div 
-            className="relative max-w-sm w-full aspect-[9/16] max-h-[90vh] rounded-[28px] overflow-hidden bg-black border border-white/15 shadow-2xl flex flex-col justify-between"
+            className="relative max-w-sm w-full aspect-[9/16] max-h-[90vh] rounded-[28px] overflow-hidden bg-black border border-white/15 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Reproductor de Video con fallback garantizado a poster de alta definicion */}
@@ -1236,12 +1236,12 @@ export const ProfilePage: React.FC = () => {
               </div>
             )}
 
-            {/* Gradientes cinematograficos para contraste */}
+            {/* Gradientes cinematograficos para contraste optimo */}
             <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/85 via-black/30 to-transparent pointer-events-none z-10"></div>
-            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/95 via-black/50 to-transparent pointer-events-none z-10"></div>
+            <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/95 via-black/60 to-transparent pointer-events-none z-10"></div>
 
-            {/* Cabecera superior del reproductor */}
-            <div className="relative z-20 flex items-center justify-between p-4">
+            {/* Cabecera superior anclada arriba */}
+            <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between p-4">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-bold tracking-wider text-white border border-white/10 uppercase">
                   4K HDR · Follow
@@ -1357,39 +1357,39 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Informacion inferior del video */}
-            <div className="relative z-20 p-4 space-y-2 max-w-[80%]">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-white">@{profileData.username}</span>
+            {/* Informacion del video anclada estrictamente a la zona inferior izquierda */}
+            <div className="absolute left-0 bottom-2.5 right-16 z-20 p-4 space-y-1.5 select-text pointer-events-none">
+              <div className="flex items-center gap-1.5 pointer-events-auto">
+                <span className="text-xs font-bold text-white drop-shadow">@{profileData.username}</span>
                 <CheckCircle className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/20" />
-                <span className="text-[9px] font-semibold text-gray-400">· 2d</span>
+                <span className="text-[9px] font-semibold text-gray-300 drop-shadow">· 2d</span>
               </div>
 
-              <h3 className="text-xs font-semibold text-white line-clamp-1">{selectedVideo.title}</h3>
+              <h3 className="text-xs font-bold text-white line-clamp-1 drop-shadow pointer-events-auto">{selectedVideo.title}</h3>
               {selectedVideo.description && (
-                <p className="text-[11px] text-gray-300 line-clamp-2 leading-relaxed">
+                <p className="text-[11px] text-gray-200 line-clamp-2 leading-relaxed drop-shadow pointer-events-auto">
                   {selectedVideo.description}
                 </p>
               )}
 
               {selectedVideo.tags && (
-                <div className="flex items-center gap-1 flex-wrap pt-0.5">
+                <div className="flex items-center gap-1 flex-wrap pt-0.5 pointer-events-auto">
                   {selectedVideo.tags.map(tag => (
-                    <span key={tag} className="text-[10px] font-semibold text-pink-400 hover:underline cursor-pointer">
+                    <span key={tag} className="text-[10px] font-semibold text-pink-400 hover:underline cursor-pointer drop-shadow">
                       {tag}
                     </span>
                   ))}
                 </div>
               )}
 
-              <div className="flex items-center gap-1.5 text-[11px] text-gray-300 pt-1">
-                <Music2 className="w-3 h-3 text-cyan-400 animate-pulse flex-shrink-0" />
+              <div className="flex items-center gap-1.5 text-[11px] text-gray-200 pt-0.5 drop-shadow pointer-events-auto">
+                <Music2 className="w-3.5 h-3.5 text-cyan-400 animate-pulse flex-shrink-0" />
                 <span className="truncate">{selectedVideo.soundTitle || 'Original Sound - Valeria Studio'}</span>
               </div>
             </div>
 
-            {/* Barra de progreso de reproduccion inferior */}
-            <div className="relative z-20 w-full h-1 bg-white/20">
+            {/* Barra de progreso de reproduccion en el borde inferior absoluto */}
+            <div className="absolute bottom-0 inset-x-0 z-30 w-full h-1 bg-white/20">
               <div 
                 className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-100"
                 style={{ width: `${modalVideoProgress}%` }}
