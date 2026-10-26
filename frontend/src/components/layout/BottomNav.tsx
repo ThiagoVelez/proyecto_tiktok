@@ -1,6 +1,6 @@
 /**
- * Barra de Navegación Flotante Inferior de Follow (Mobile / Floating Dock).
- * Réplica idéntica de la cápsula presente en los diseños de Stitch.
+ * Barra de Navegacion Flotante Inferior de Follow (Mobile / Floating Dock).
+ * Conexiones completas a Para Ti (/), Explorar (/explorar), Crear (/estudio), Actividad (/actividad) y Perfil (/perfil).
  */
 
 import React from 'react';
@@ -46,10 +46,10 @@ export const BottomNav: React.FC = () => {
           <span className="text-[11px]">Explorar</span>
         </Link>
 
-        {/* Botón Central + Crear */}
+        {/* Boton Central + Crear */}
         <Link
           to="/estudio"
-          aria-label="Crear publicación"
+          aria-label="Crear publicacion"
           className="mx-1 w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-rose-400 flex items-center justify-center text-white shadow-lg shadow-pink-500/30 hover:scale-110 active:scale-95 transition-transform"
         >
           <Plus className="w-5 h-5 stroke-[2.5]" />
@@ -57,10 +57,14 @@ export const BottomNav: React.FC = () => {
 
         {/* Actividad */}
         <Link
-          to="/explorar?tab=actividad"
-          className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs text-gray-400 hover:text-white transition-all"
+          to="/actividad"
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs transition-all ${
+            isCurrent('/actividad')
+              ? 'text-white bg-white/10 font-medium'
+              : 'text-gray-400 hover:text-white'
+          }`}
         >
-          <Heart className="w-4 h-4" />
+          <Heart className={`w-4 h-4 ${isCurrent('/actividad') ? 'fill-pink-500 text-pink-500' : ''}`} />
           <span className="text-[11px]">Actividad</span>
         </Link>
 

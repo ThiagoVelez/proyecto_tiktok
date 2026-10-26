@@ -1,6 +1,6 @@
 /**
- * Enrutador Principal de la Aplicación Follow.
- * Arquitectura SPA con React Router v6.
+ * Enrutador Principal de la Aplicacion Follow.
+ * Arquitectura SPA con React Router v6 y cobertura de todas las secciones.
  */
 
 import React from 'react';
@@ -9,6 +9,9 @@ import { Navbar } from './components/layout/Navbar';
 import { BottomNav } from './components/layout/BottomNav';
 import { FeedPage } from './pages/FeedPage';
 import { ExplorePage } from './pages/ExplorePage';
+import { TrendsPage } from './pages/TrendsPage';
+import { LivePage } from './pages/LivePage';
+import { ActivityPage } from './pages/ActivityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { StudioPage } from './pages/StudioPage';
 import { AuthPage } from './pages/AuthPage';
@@ -25,6 +28,9 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<FeedPage />} />
           <Route path="/explorar" element={<ExplorePage />} />
+          <Route path="/tendencias" element={<TrendsPage />} />
+          <Route path="/en-vivo" element={<LivePage />} />
+          <Route path="/actividad" element={<ActivityPage />} />
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/estudio" element={<StudioPage />} />
           <Route path="/login" element={<AuthPage />} />

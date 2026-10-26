@@ -1,7 +1,6 @@
 /**
- * Barra de Navegación Principal Superior de Follow.
- * Implementación 100% fiel al diseño de Stitch.
- * Cumple con la directiva de iconos Lucide y cero emojis.
+ * Barra de Navegacion Principal Superior de Follow.
+ * Enlaces actualizados a Tendencias (/tendencias), En Vivo (/en-vivo) y Notificaciones (/actividad).
  */
 
 import React, { useState } from 'react';
@@ -35,7 +34,6 @@ export const Navbar: React.FC = () => {
         {/* LOGO Y ENLACES PRINCIPALES */}
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2.5 group">
-            {/* Isotipo Follow con gradiente */}
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-rose-400 flex items-center justify-center shadow-lg shadow-pink-500/20 group-hover:scale-105 transition-transform">
               <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m22 2-7 20-4-9-9-4Z" />
@@ -45,7 +43,7 @@ export const Navbar: React.FC = () => {
             <span className="text-xl font-bold tracking-tight text-white font-sans">Follow</span>
           </Link>
 
-          {/* Menú de Navegación Desktop */}
+          {/* Menu de Navegacion Desktop */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link
               to="/"
@@ -64,17 +62,17 @@ export const Navbar: React.FC = () => {
               Explorar
             </Link>
             <Link
-              to="/explorar?tab=tendencias"
+              to="/tendencias"
               className={`transition-colors hover:text-white ${
-                location.search.includes('tendencias') ? 'text-white font-semibold' : 'text-gray-400'
+                isActive('/tendencias') ? 'text-white font-semibold' : 'text-gray-400'
               }`}
             >
               Tendencias
             </Link>
             <Link
-              to="/explorar?tab=en-vivo"
+              to="/en-vivo"
               className={`transition-colors hover:text-white ${
-                location.search.includes('en-vivo') ? 'text-white font-semibold' : 'text-gray-400'
+                isActive('/en-vivo') ? 'text-white font-semibold' : 'text-gray-400'
               }`}
             >
               En Vivo
@@ -82,7 +80,7 @@ export const Navbar: React.FC = () => {
           </nav>
         </div>
 
-        {/* BARRA DE BÚSQUEDA CENTRAL */}
+        {/* BARRA DE BUSQUEDA CENTRAL */}
         <div className="flex-1 max-w-md hidden sm:block">
           <form onSubmit={handleSearchSubmit} className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -105,7 +103,7 @@ export const Navbar: React.FC = () => {
 
         {/* ACCIONES Y PERFIL DE USUARIO */}
         <div className="flex items-center gap-3">
-          {/* Botón + Crear */}
+          {/* Boton + Crear */}
           <Link
             to="/estudio"
             className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 text-white text-xs font-semibold shadow-lg shadow-pink-500/20 hover:brightness-110 active:scale-95 transition-all"
@@ -115,23 +113,23 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Mensajes Directos */}
-          <button
-            type="button"
+          <Link
+            to="/actividad"
             aria-label="Mensajes directos"
             className="p-2 text-gray-300 hover:text-white rounded-full hover:bg-white/5 transition-colors relative"
           >
             <Send className="w-4 h-4" />
-          </button>
+          </Link>
 
-          {/* Notificaciones */}
-          <button
-            type="button"
+          {/* Notificaciones / Actividad */}
+          <Link
+            to="/actividad"
             aria-label="Notificaciones"
             className="p-2 text-gray-300 hover:text-white rounded-full hover:bg-white/5 transition-colors relative"
           >
             <Bell className="w-4 h-4" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-pink-500 ring-2 ring-[#0c0d14]"></span>
-          </button>
+          </Link>
 
           {/* Avatar del usuario / Enlace a perfil */}
           <Link
@@ -140,7 +138,7 @@ export const Navbar: React.FC = () => {
           >
             <img
               src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
-              alt="Valeria Gómez"
+              alt="Valeria Gomez"
               className="w-7 h-7 rounded-full object-cover"
             />
           </Link>

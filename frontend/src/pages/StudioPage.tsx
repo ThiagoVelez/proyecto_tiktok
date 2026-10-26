@@ -1,7 +1,7 @@
 /**
- * Pantalla 5: Estudio de Publicación y Edición Avanzada (Creator Studio V2.4).
- * Replicación exacta del diseño de Stitch con editor de video interactivo,
- * gestión de metadatos, miniaturas, privacidad y llamada al backend FastAPI.
+ * Pantalla 5: Estudio de Publicacion y Edicion Avanzada (Creator Studio V2.4).
+ * Incluye trimmer interactivo de linea de tiempo con puntos de corte ajustables en tiempo real,
+ * mezclador de audio dedicado y opciones completas de privacidad y metadatos.
  */
 
 import React, { useState } from 'react';
@@ -10,7 +10,7 @@ import {
   Play, Pause, Maximize2, Radio, Music, Wand2, Type, 
   Smile, Gauge, Scissors, Cloud, Upload, Globe, 
   Users, Lock, X, Check, ArrowRight, Sparkles, MessageSquare, 
-  Share2, Download, Film, Sliders
+  Share2, Download, Film, Sliders, Volume2, SlidersHorizontal
 } from 'lucide-react';
 import { publishVideo } from '../services/api';
 
@@ -20,7 +20,7 @@ export const StudioPage: React.FC = () => {
   // Estados del Formulario
   const [title, setTitle] = useState('Mi nuevo setup nocturno 2025 ✨');
   const [description, setDescription] = useState(
-    'Armé por fin el espacio de trabajo definitivo para diseño, código y streaming de madrugada. Todos los periféricos sincronizados con el ecosistema Follow y paleta cyberpunk. Déjame en comentarios qué gadget te gustó más.'
+    'Arme por fin el espacio de trabajo definitivo para diseno, codigo y streaming de madrugada. Todos los perifericos sincronizados con el ecosistema Follow y paleta cyberpunk. Dejame en comentarios que gadget te gusto mas.'
   );
   const [selectedFilter, setSelectedFilter] = useState('Neo Glow');
   const [tags, setTags] = useState<string[]>(['follow', 'tech', 'setup', 'creator', 'viral', 'aesthetic']);
@@ -32,14 +32,22 @@ export const StudioPage: React.FC = () => {
   const [allowDuet, setAllowDuet] = useState(true);
   const [allowDownloads, setAllowDownloads] = useState(false);
 
-  // Estados del reproductor en vivo
-  const [isPlaying, setIsPlaying] = useState(false);
+  // Estados de Edicion de Video y Puntos de Corte
+  const [startCut, setStartCut] = useState(3.20);
+  const [endCut, setEndCut] = useState(35.80);
   const [clipVolume, setClipVolume] = useState(100);
   const [musicVolume, setMusicVolume] = useState(75);
+  const [showMixerModal, setShowMixerModal] = useState(false);
+  const [audioPreset, setAudioPreset] = useState<'equilibrado' | 'voz' | 'graves'>('equilibrado');
+
+  // Estados de Reproduccion y Publicacion
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
 
-  // Miniaturas del diseño
+  const durationCut = Math.max(0, endCut - startCut).toFixed(1);
+
+  // Miniaturas del diseno
   const thumbnails = [
     'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=300',
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
@@ -68,6 +76,20 @@ export const StudioPage: React.FC = () => {
     }
   };
 
+  const handleApplyAudioPreset = (preset: 'equilibrado' | 'voz' | 'graves') => {
+    setAudioPreset(preset);
+    if (preset === 'voz') {
+      setClipVolume(130);
+      setMusicVolume(40);
+    } else if (preset === 'graves') {
+      setClipVolume(90);
+      setMusicVolume(95);
+    } else {
+      setClipVolume(100);
+      setMusicVolume(75);
+    }
+  };
+
   const handlePublish = async () => {
     setIsPublishing(true);
     setFeedbackMsg('');
@@ -81,7 +103,7 @@ export const StudioPage: React.FC = () => {
 
       const res = await publishVideo(formData);
       if (res.success) {
-        setFeedbackMsg('Publicación exitosa. Redirigiendo al perfil...');
+        setFeedbackMsg('Publicacion exitosa en Follow. Redirigiendo al perfil...');
         setTimeout(() => navigate('/perfil'), 1500);
       }
     } catch (err: unknown) {
@@ -95,15 +117,15 @@ export const StudioPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0c0d14] text-white pb-28 pt-4 px-4 sm:px-6 lg:px-10 max-w-7xl mx-auto space-y-6">
       
-      {/* CABECERA: TÍTULO DEL ESTUDIO Y STATUS */}
+      {/* CABECERA: TITULO DEL ESTUDIO Y STATUS */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/5">
         <div>
           <span className="text-[10px] font-mono font-bold tracking-wider text-pink-400 uppercase block">
-            • CREATOR STUDIO V2.4 • EDICIÓN AVANZADA
+            • CREATOR STUDIO V2.4 • EDICION AVANZADA
           </span>
           <div className="flex items-center gap-3 pt-0.5">
             <h1 className="text-2xl font-black tracking-tight text-white font-sans">
-              Estudio de Publicación
+              Estudio de Publicacion
             </h1>
             <span className="px-2.5 py-0.5 rounded-md bg-purple-900/50 text-purple-300 border border-purple-500/30 text-[10px] font-bold tracking-wider">
               4K HDR READY
@@ -119,26 +141,27 @@ export const StudioPage: React.FC = () => {
       </div>
 
       {feedbackMsg && (
-        <div className="p-3 rounded-2xl bg-gradient-to-r from-purple-900/60 to-pink-900/60 border border-pink-500/40 text-xs font-semibold text-white">
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-900/70 to-pink-900/70 border border-pink-500/40 text-xs font-semibold text-white shadow-lg">
           {feedbackMsg}
         </div>
       )}
 
-      {/* CONTENEDOR PRINCIPAL: 2 COLUMNAS (PREVISUALIZACIÓN Y DETALLES) */}
+      {/* CONTENEDOR PRINCIPAL: 2 COLUMNAS (PREVISUALIZACION Y DETALLES) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* COLUMNA IZQUIERDA (5 COLUMNAS): PREVIEW DEL VIDEO Y CONTROLES DE EDICIÓN */}
+        {/* COLUMNA IZQUIERDA (5 COLUMNAS): PREVIEW DEL VIDEO Y CONTROLES DE EDICION */}
         <div className="lg:col-span-5 space-y-5">
           
           {/* Smart Container de Video Vertical */}
           <div className="relative aspect-[9/16] w-full max-w-[380px] mx-auto rounded-[32px] overflow-hidden bg-black border border-white/10 shadow-2xl flex flex-col justify-between p-4">
             
-            {/* Imagen simulada del video en edición */}
             <img
               src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800"
               alt="Setup de trabajo"
-              className={`absolute inset-0 w-full h-full object-cover ${
-                selectedFilter === 'Neo Glow' ? 'contrast-125 saturate-125' : ''
+              className={`absolute inset-0 w-full h-full object-cover transition-all ${
+                selectedFilter === 'Neo Glow' ? 'contrast-125 saturate-125' :
+                selectedFilter === 'Cyber Cyan' ? 'hue-rotate-30 saturate-150' :
+                selectedFilter === 'Vintage 90s' ? 'sepia-50 contrast-110' : ''
               }`}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none"></div>
@@ -157,13 +180,13 @@ export const StudioPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Píldora de Audio insertado */}
+            {/* Pildora de Audio insertado */}
             <div className="relative z-10 self-center bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 text-xs text-cyan-300">
               <Music className="w-3.5 h-3.5 text-pink-400" />
               <span className="truncate max-w-[200px] text-[11px]">Midnight Synthwave • Neon Drift (Original M...</span>
             </div>
 
-            {/* Botón Central Play/Pause */}
+            {/* Boton Central Play/Pause */}
             <button
               onClick={() => setIsPlaying(!isPlaying)}
               className="absolute inset-0 m-auto w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all shadow-xl"
@@ -173,7 +196,7 @@ export const StudioPage: React.FC = () => {
 
             {/* Paleta vertical de herramientas a la derecha del video */}
             <div className="absolute right-3 top-24 z-10 flex flex-col items-center gap-3 bg-black/50 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 text-white">
-              <button className="p-2 rounded-xl hover:bg-white/10 flex flex-col items-center gap-0.5">
+              <button onClick={() => setShowMixerModal(true)} className="p-2 rounded-xl hover:bg-white/10 flex flex-col items-center gap-0.5">
                 <Music className="w-4 h-4 text-cyan-400" />
                 <span className="text-[8px] font-bold">Audio</span>
               </button>
@@ -199,18 +222,18 @@ export const StudioPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Texto de subtítulo overlay */}
+            {/* Texto de subtitulo overlay */}
             <div className="relative z-10 text-center pb-2">
               <span className="px-3 py-1 rounded-xl bg-black/70 backdrop-blur-md text-white text-xs font-semibold border border-white/10 shadow-lg">
-                "Este es el mejor ángulo para programar..."
+                "Este es el mejor angulo para programar..."
               </span>
             </div>
 
           </div>
 
-          {/* Filtros Rápidos */}
+          {/* Filtros Rapidos */}
           <div className="space-y-2">
-            <span className="text-xs text-gray-400 font-medium">Filtros rápidos aplicados:</span>
+            <span className="text-xs text-gray-400 font-medium">Filtros rapidos aplicados:</span>
             <div className="flex items-center gap-2 flex-wrap text-xs">
               {['Neo Glow', 'Cyber Cyan', 'Vintage 90s', '4K Crisp Enhance'].map((filterName) => (
                 <button
@@ -229,31 +252,71 @@ export const StudioPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Línea de Tiempo / Scrubber de Corte */}
-          <div className="p-4 rounded-3xl bg-[#141524] border border-white/5 space-y-3">
+          {/* LINEA DE TIEMPO / SCRUBBER DE CORTE INTERACTIVO (Replicacion exacta del fragmento) */}
+          <div className="p-4 rounded-3xl bg-[#141524] border border-white/5 space-y-3 shadow-inner">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-300 font-mono">Puntos de corte: [00:03.20 - 00:35.80]</span>
-              <span className="text-pink-400 font-mono font-bold">Duración: 32.6s</span>
+              <span className="text-gray-300 font-mono">
+                Puntos de corte: [00:0{startCut.toFixed(2)} - 00:{endCut.toFixed(2)}]
+              </span>
+              <span className="text-pink-400 font-mono font-bold">
+                Duracion: {durationCut}s
+              </span>
             </div>
 
-            {/* Timeline track interactivo */}
-            <div className="relative h-10 rounded-xl bg-[#0e0f19] border border-white/10 flex items-center px-4 overflow-hidden">
-              <div className="absolute left-6 right-8 h-full bg-pink-500/20 border-y border-pink-500/50"></div>
-              <div className="absolute left-6 w-2 h-full bg-pink-500 cursor-ew-resize rounded-l"></div>
-              <div className="absolute right-8 w-2 h-full bg-pink-500 cursor-ew-resize rounded-r"></div>
-              <div className="w-full flex items-center justify-between opacity-30 text-[9px] font-mono">
+            {/* Pista de corte con sliders visuales interactivos */}
+            <div className="relative h-12 rounded-xl bg-[#0e0f19] border border-white/10 flex flex-col justify-center px-4 overflow-hidden">
+              <div
+                className="absolute h-full bg-pink-500/25 border-y border-pink-500/50"
+                style={{
+                  left: `${(startCut / 45) * 100}%`,
+                  right: `${100 - (endCut / 45) * 100}%`
+                }}
+              ></div>
+
+              <div className="w-full flex items-center justify-between opacity-40 text-[9px] font-mono pointer-events-none select-none">
                 <span>00:00</span>
                 <span>00:15</span>
                 <span>00:30</span>
                 <span>00:45</span>
               </div>
+
+              {/* Sliders de ajuste de rango */}
+              <div className="absolute inset-x-2 flex items-center justify-between pointer-events-auto">
+                <input
+                  type="range"
+                  min="0"
+                  max="40"
+                  step="0.1"
+                  value={startCut}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (val < endCut - 2) setStartCut(val);
+                  }}
+                  className="w-1/2 accent-pink-500 cursor-pointer opacity-80 hover:opacity-100"
+                />
+                <input
+                  type="range"
+                  min="5"
+                  max="45"
+                  step="0.1"
+                  value={endCut}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (val > startCut + 2) setEndCut(val);
+                  }}
+                  className="w-1/2 accent-pink-500 cursor-pointer opacity-80 hover:opacity-100"
+                />
+              </div>
             </div>
 
-            {/* Controles de Balance de Audio */}
-            <div className="flex items-center justify-between text-xs text-gray-400 pt-1">
-              <span>Volumen clip: {clipVolume}%</span>
-              <span>Música: {musicVolume}%</span>
-              <button className="text-cyan-400 hover:underline flex items-center gap-1">
+            {/* Balances de Audio y Boton Mezclador */}
+            <div className="flex items-center justify-between text-xs text-gray-300 pt-1">
+              <span className="font-mono text-gray-400">Volumen clip: {clipVolume}%</span>
+              <span className="font-mono text-gray-400">Musica: {musicVolume}%</span>
+              <button
+                onClick={() => setShowMixerModal(true)}
+                className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1.5 transition-colors"
+              >
                 <Sliders className="w-3.5 h-3.5" />
                 <span>Mezclador de audio</span>
               </button>
@@ -262,7 +325,7 @@ export const StudioPage: React.FC = () => {
 
         </div>
 
-        {/* COLUMNA DERECHA (7 COLUMNAS): DETALLES, METADATOS Y PUBLICACIÓN */}
+        {/* COLUMNA DERECHA (7 COLUMNAS): DETALLES, METADATOS Y PUBLICACION */}
         <div className="lg:col-span-7 space-y-6">
           
           {/* TARJETA 1: DETALLES DEL CONTENIDO */}
@@ -277,10 +340,10 @@ export const StudioPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Título del video */}
+            {/* Titulo del video */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <label className="text-gray-300 font-semibold">Título del video</label>
+                <label className="text-gray-300 font-semibold">Titulo del video</label>
                 <span className="text-[10px] text-gray-500 font-mono">{title.length} / 100</span>
               </div>
               <input
@@ -292,10 +355,10 @@ export const StudioPage: React.FC = () => {
               />
             </div>
 
-            {/* Descripción detallada */}
+            {/* Descripcion detallada */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <label className="text-gray-300 font-semibold">Descripción detallada</label>
+                <label className="text-gray-300 font-semibold">Descripcion detallada</label>
                 <span className="text-[10px] text-gray-500 font-mono">{description.length} / 2200</span>
               </div>
               <textarea
@@ -364,7 +427,7 @@ export const StudioPage: React.FC = () => {
               <div>
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider">Portada & Miniatura</h3>
                 <p className="text-[11px] text-gray-400">
-                  Selecciona el fotograma clave que cautivará en el feed de Explorar
+                  Selecciona el fotograma clave que cautivara en el feed de Explorar
                 </p>
               </div>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1b1c2e] hover:bg-white/10 text-xs font-semibold text-gray-200 border border-white/5 transition-colors">
@@ -405,17 +468,17 @@ export const StudioPage: React.FC = () => {
             </div>
           </div>
 
-          {/* TARJETA 3: PRIVACIDAD Y OPCIONES DE AUDIENCIA */}
+          {/* TARJETA 3: PRIVACIDAD Y OPCIONES DE AUDIENCIA (Fidelidad 100% al fragmento) */}
           <div className="p-6 rounded-3xl bg-[#141524] border border-white/5 space-y-5">
             <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-              Privacidad y Opciones de Audiencia
+              PRIVACIDAD Y OPCIONES DE AUDIENCIA
             </h3>
 
             {/* Selector Segmentado de Audiencia */}
             <div className="space-y-2">
-              <span className="text-xs text-gray-300 font-semibold block">Quién puede ver este video</span>
+              <span className="text-xs text-gray-300 font-semibold block">Quien puede ver este video</span>
               <p className="text-[11px] text-gray-500 -mt-1">
-                Controla la distribución en feeds globales y algoritmos
+                Controla la distribucion en feeds globales y algoritmos
               </p>
               <div className="grid grid-cols-3 p-1 bg-[#1b1c2e] rounded-2xl border border-white/5 text-xs font-semibold">
                 <button
@@ -426,7 +489,7 @@ export const StudioPage: React.FC = () => {
                   }`}
                 >
                   <Globe className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Público</span>
+                  <span>Publico</span>
                 </button>
 
                 <button
@@ -453,13 +516,14 @@ export const StudioPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Switches de interacción */}
-            <div className="space-y-3 pt-2">
+            {/* Switches de interaccion exactos al diseno */}
+            <div className="space-y-4 pt-2">
+              
               {/* Permitir comentarios */}
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-white block">Permitir comentarios</span>
-                  <span className="text-[11px] text-gray-400">Tus seguidores podrán debatir en tu publicación</span>
+                  <span className="text-[11px] text-gray-400">Tus seguidores podran debatir en tu publicacion</span>
                 </div>
                 <button
                   type="button"
@@ -474,10 +538,10 @@ export const StudioPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Permitir Dúos y Remix */}
+              {/* Permitir Duos y Remix */}
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-semibold text-white block">Permitir Dúos y Remix (Pegar)</span>
+                  <span className="text-xs font-semibold text-white block">Permitir Duos y Remix (Pegar)</span>
                   <span className="text-[11px] text-gray-400">Impulsa tu alcance permitiendo reacciones a tu clip</span>
                 </div>
                 <button
@@ -497,7 +561,7 @@ export const StudioPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-white block">Permitir descargas del video</span>
-                  <span className="text-[11px] text-gray-400">Los espectadores podrán guardar el video con marca de agua</span>
+                  <span className="text-[11px] text-gray-400">Los espectadores podran guardar el video con marca de agua</span>
                 </div>
                 <button
                   type="button"
@@ -511,11 +575,12 @@ export const StudioPage: React.FC = () => {
                   }`}></div>
                 </button>
               </div>
+
             </div>
 
           </div>
 
-          {/* BARRA INFERIOR DE ACCIONES */}
+          {/* BARRA INFERIOR DE ACCIONES (Cancelar / Guardar en borrador / Publicar Video) */}
           <div className="flex items-center justify-end gap-3 pt-4">
             <button
               onClick={() => navigate('/')}
@@ -525,7 +590,7 @@ export const StudioPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setFeedbackMsg('Borrador guardado localmente.')}
+              onClick={() => setFeedbackMsg('Borrador guardado exitosamente.')}
               className="px-6 py-3 rounded-2xl bg-[#1b1c2e] hover:bg-[#252740] text-gray-300 text-xs font-bold transition-all"
             >
               Guardar en borrador
@@ -544,6 +609,94 @@ export const StudioPage: React.FC = () => {
         </div>
 
       </div>
+
+      {/* MODAL MEZCLADOR DE AUDIO */}
+      {showMixerModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setShowMixerModal(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl bg-[#141524] border border-white/10 shadow-2xl p-6 space-y-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-white/10">
+              <div className="flex items-center gap-2 text-cyan-400">
+                <Sliders className="w-4 h-4" />
+                <h3 className="text-sm font-bold text-white">Mezclador de Audio Profesional</h3>
+              </div>
+              <button onClick={() => setShowMixerModal(false)} className="text-gray-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Presets de ecualizacion */}
+            <div className="space-y-2">
+              <span className="text-xs text-gray-400 font-medium">Perfiles de Sonido Rapidos:</span>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { key: 'equilibrado', label: 'Equilibrado' },
+                  { key: 'voz', label: 'Voz Inteligente' },
+                  { key: 'graves', label: 'Graves Synth' }
+                ].map((p) => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => handleApplyAudioPreset(p.key as any)}
+                    className={`py-2 rounded-xl text-xs font-semibold border transition-all ${
+                      audioPreset === p.key
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
+                        : 'bg-[#1b1c2e] text-gray-400 border-white/5 hover:text-white'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sliders de volumen */}
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-300 font-medium">Volumen del Clip Original</span>
+                  <span className="text-cyan-400 font-mono font-bold">{clipVolume}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={clipVolume}
+                  onChange={(e) => setClipVolume(parseInt(e.target.value))}
+                  className="w-full accent-cyan-400 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-300 font-medium">Volumen de la Pista Musical</span>
+                  <span className="text-pink-400 font-mono font-bold">{musicVolume}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={musicVolume}
+                  onChange={(e) => setMusicVolume(parseInt(e.target.value))}
+                  className="w-full accent-pink-500 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowMixerModal(false)}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20"
+            >
+              Guardar Ajustes de Audio
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
