@@ -103,7 +103,7 @@ export const FeedPage: React.FC = () => {
     id: 1,
     title: 'Configurando el nuevo setup holográfico para streaming nocturno',
     description: 'Configurando el nuevo setup holográfico para streaming nocturno. ¿Qué opinan de esta... #aesthetic #techtrends #creativelife #cyberpunk',
-    video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    video_url: '/videos/cyber_street.mp4',
     author: {
       username: 'valeria_creatrix',
       full_name: 'Valeria Gómez',

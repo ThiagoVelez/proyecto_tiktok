@@ -46,7 +46,7 @@ export const LivePage: React.FC = () => {
       creatorAvatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100",
       viewers: "42.8k",
       category: "Arte & Musica",
-      streamUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      streamUrl: "/videos/cyber_street.mp4",
       cover: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600"
     },
     {
@@ -56,7 +56,7 @@ export const LivePage: React.FC = () => {
       creatorAvatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100",
       viewers: "12.6k",
       category: "Moda Cyberpunk",
-      streamUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+      streamUrl: "/videos/fashion_walk.mp4",
       cover: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600"
     },
     {
@@ -66,7 +66,7 @@ export const LivePage: React.FC = () => {
       creatorAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100",
       viewers: "8.4k",
       category: "Hardware & Tech",
-      streamUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+      streamUrl: "/videos/city_traffic.mp4",
       cover: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600"
     }
   ];

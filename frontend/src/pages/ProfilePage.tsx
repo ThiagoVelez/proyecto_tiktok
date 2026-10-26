@@ -4,14 +4,14 @@
  * modales interactivos para Editar Perfil, Compartir Perfil, Estadisticas de Creador y Ajustes de Cuenta.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircle, Headphones, MapPin, Music2, Video as VideoIcon, 
   Pencil, Share2, TrendingUp, Settings, Plus, Film, Bookmark, 
-  Archive, Heart, Lock, Grid, List, Play, ChevronRight, X, 
+  Archive, Heart, Lock, Grid, List, Play, Pause, ChevronRight, X, 
   ChevronLeft, Send, Sparkles, Upload, Copy, Check, Shield, 
-  Eye, Folder, ArrowRight
+  Eye, Folder, ArrowRight, Volume2, VolumeX, MessageSquare
 } from 'lucide-react';
 
 interface HighlightStory {
@@ -27,6 +27,10 @@ interface ProfileVideo {
   views: string;
   likes: string;
   image: string;
+  videoUrl: string;
+  description?: string;
+  soundTitle?: string;
+  tags?: string[];
   isPinned?: boolean;
   hasAudioNote?: boolean;
 }
@@ -59,6 +63,14 @@ export const ProfilePage: React.FC = () => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Estados del Reproductor de Video en Modal
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const [modalVideoProgress, setModalVideoProgress] = useState(0);
+  const [modalLikedMap, setModalLikedMap] = useState<Record<number, boolean>>({});
+  const [modalBookmarksMap, setModalBookmarksMap] = useState<Record<number, boolean>>({});
+  const modalVideoRef = useRef<HTMLVideoElement>(null);
+
   // Datos Editables del Perfil
   const [profileData, setProfileData] = useState({
     fullName: "Valeria Gomez",
@@ -87,7 +99,7 @@ export const ProfilePage: React.FC = () => {
     { id: '4', title: "Festivales", image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600", date: "Octubre 2024" },
   ]);
 
-  // Cuadricula de Reels Publicados
+  // Cuadricula de Reels Publicados (Totalmente vinculados a videos locales HD)
   const reelsVideos: ProfileVideo[] = [
     {
       id: 1,
@@ -95,6 +107,10 @@ export const ProfilePage: React.FC = () => {
       views: "2.4M",
       likes: "410K",
       image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600",
+      videoUrl: "/videos/cyber_street.mp4",
+      description: "Exploracion de siluetas utilitarias y textiles reflectantes en el distrito de Shibuya.",
+      soundTitle: "Synthetic Pulse (Overdrive Edit) - Kavinsky",
+      tags: ["#CyberpunkStyle", "#StreetwearInspo", "#Tokyo"],
       isPinned: true
     },
     {
@@ -103,6 +119,10 @@ export const ProfilePage: React.FC = () => {
       views: "1.2M",
       likes: "180K",
       image: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=600",
+      videoUrl: "/videos/fashion_walk.mp4",
+      description: "Modelado espacial y computacion visual para nuevas pasarelas digitales.",
+      soundTitle: "Neo Tokyo Rain Drift - Subway Runner",
+      tags: ["#CreativeProcess", "#DigitalArt", "#VR"],
       hasAudioNote: true
     },
     {
@@ -110,42 +130,66 @@ export const ProfilePage: React.FC = () => {
       title: "Morning ritual en Madrid",
       views: "890K",
       likes: "95K",
-      image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600"
+      image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600",
+      videoUrl: "/videos/macro_visual.mp4",
+      description: "Despertar sereno en Malasana: cafe de especialidad, luz natural y primera sesion de diseno.",
+      soundTitle: "Original Sound - Valeria Studio",
+      tags: ["#MorningRoutine", "#Madrid", "#CoffeeArt", "#Lifestyle"]
     },
     {
       id: 4,
       title: "Akihabara a las 3 AM",
       views: "540K",
       likes: "78K",
-      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=600"
+      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=600",
+      videoUrl: "/videos/city_traffic.mp4",
+      description: "Luces de neon, callejones silenciosos y la estetica futurista de Tokyo.",
+      soundTitle: "Neon Horizon Beat - Sofia K",
+      tags: ["#TokyoNight", "#Akihabara", "#CyberVibes"]
     },
     {
       id: 5,
       title: "ASMR Custom Keyboard Build",
       views: "520K",
       likes: "63K",
-      image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600"
+      image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600",
+      videoUrl: "/videos/ocean_cinematic.mp4",
+      description: "Lubricando switches mecanicos y montando keycaps de ceramica industrial.",
+      soundTitle: "ASMR Mechanical Soundscape",
+      tags: ["#CustomKeyboard", "#ASMR", "#TechSetup"]
     },
     {
       id: 6,
       title: "3 Hacks de luz con el movil",
       views: "450K",
       likes: "42K",
-      image: "https://images.unsplash.com/photo-1512790182412-b19e6d62bc39?w=600"
+      image: "https://images.unsplash.com/photo-1512790182412-b19e6d62bc39?w=600",
+      videoUrl: "/videos/ambient_people.mp4",
+      description: "Iluminacion cinematografica usando pantallas OLED y rebote de luz difusa.",
+      soundTitle: "Midnight Synthwave - Neon Drift",
+      tags: ["#Filmmaking", "#MobilePhotography", "#Lighting"]
     },
     {
       id: 7,
       title: "Mi nueva camara principal?",
       views: "398K",
       likes: "37K",
-      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600"
+      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600",
+      videoUrl: "/videos/cyber_street.mp4",
+      description: "Primeros rollos y pruebas en sensor mediano formato con luz ultravioleta.",
+      soundTitle: "Original Sound - Valeria Studio",
+      tags: ["#CameraReview", "#MediumFormat", "#Gear"]
     },
     {
       id: 8,
       title: "Sampleando sonidos del metro",
       views: "312K",
       likes: "29K",
-      image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600"
+      image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600",
+      videoUrl: "/videos/city_traffic.mp4",
+      description: "Capturando el ritmo mecanico de los trenes para produccion musical urbana.",
+      soundTitle: "Metro Resonance - Sound Design",
+      tags: ["#SoundDesign", "#FieldRecording", "#SamplePack"]
     }
   ];
 
@@ -225,6 +269,61 @@ export const ProfilePage: React.FC = () => {
     return () => clearInterval(interval);
   }, [activeStoryIndex, isStoryPaused, highlights.length]);
 
+  // Autoplay y reseteo suave al seleccionar un video en el modal
+  useEffect(() => {
+    if (selectedVideo) {
+      setIsVideoPlaying(true);
+      setModalVideoProgress(0);
+      if (modalVideoRef.current) {
+        modalVideoRef.current.currentTime = 0;
+        modalVideoRef.current.play().catch(() => {
+          setIsVideoMuted(true);
+          if (modalVideoRef.current) {
+            modalVideoRef.current.muted = true;
+            modalVideoRef.current.play().catch(() => {});
+          }
+        });
+      }
+    }
+  }, [selectedVideo]);
+
+  // Atajos de teclado dentro del visor de video (Escape para cerrar, Espacio/K pausar, M mutear, Flechas anterior/siguiente)
+  useEffect(() => {
+    if (!selectedVideo) return;
+    const handleModalKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'Escape') {
+        setSelectedVideo(null);
+      } else if (e.key === ' ' || e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modalVideoRef.current) {
+          if (modalVideoRef.current.paused) {
+            modalVideoRef.current.play();
+            setIsVideoPlaying(true);
+          } else {
+            modalVideoRef.current.pause();
+            setIsVideoPlaying(false);
+          }
+        }
+      } else if (e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        setIsVideoMuted(prev => !prev);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const currentIndex = reelsVideos.findIndex(v => v.id === selectedVideo.id);
+        const nextIndex = (currentIndex + 1) % reelsVideos.length;
+        setSelectedVideo(reelsVideos[nextIndex]);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const currentIndex = reelsVideos.findIndex(v => v.id === selectedVideo.id);
+        const prevIndex = (currentIndex - 1 + reelsVideos.length) % reelsVideos.length;
+        setSelectedVideo(reelsVideos[prevIndex]);
+      }
+    };
+    window.addEventListener('keydown', handleModalKeyDown);
+    return () => window.removeEventListener('keydown', handleModalKeyDown);
+  }, [selectedVideo, reelsVideos]);
+
   const handleOpenStory = (index: number) => {
     setActiveStoryIndex(index);
     setStoryProgress(0);
@@ -258,10 +357,6 @@ export const ProfilePage: React.FC = () => {
                 className="w-full h-full rounded-full object-cover border-2 border-[#0c0d14]"
               />
             </div>
-            <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-pink-600 text-[10px] font-bold tracking-wider rounded-full uppercase border border-[#0c0d14] shadow-md flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-              EN VIVO
-            </span>
           </div>
 
           <div className="space-y-1.5">
@@ -1110,31 +1205,249 @@ export const ProfilePage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL DE PREVISUALIZACION DE VIDEO */}
+      {/* MODAL DE PREVISUALIZACION DE VIDEO PROFESIONAL (ESTILO TIKTOK/REELS) */}
       {selectedVideo && (
         <div 
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200"
           onClick={() => setSelectedVideo(null)}
         >
+          {/* Botones de navegacion lateral en escritorio */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const currentIndex = reelsVideos.findIndex(v => v.id === selectedVideo.id);
+              const prevIndex = (currentIndex - 1 + reelsVideos.length) % reelsVideos.length;
+              setSelectedVideo(reelsVideos[prevIndex]);
+            }}
+            className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all border border-white/10 z-20 shadow-xl hover:scale-105"
+            title="Video anterior (Flecha izquierda)"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const currentIndex = reelsVideos.findIndex(v => v.id === selectedVideo.id);
+              const nextIndex = (currentIndex + 1) % reelsVideos.length;
+              setSelectedVideo(reelsVideos[nextIndex]);
+            }}
+            className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all border border-white/10 z-20 shadow-xl hover:scale-105"
+            title="Siguiente video (Flecha derecha)"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
           <div 
-            className="relative max-w-sm w-full aspect-[9/16] rounded-2xl overflow-hidden bg-[#12131e] border border-white/10 shadow-2xl"
+            className="relative max-w-sm w-full aspect-[9/16] max-h-[90vh] rounded-[28px] overflow-hidden bg-black border border-white/15 shadow-2xl flex flex-col justify-between"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Reproductor de Video con fallback garantizado a poster de alta definicion */}
             <video
-              src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-              controls
+              ref={modalVideoRef}
+              src={selectedVideo.videoUrl}
+              poster={selectedVideo.image}
               autoPlay
-              className="w-full h-full object-cover"
+              loop
+              muted={isVideoMuted}
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+              onClick={() => {
+                if (modalVideoRef.current) {
+                  if (modalVideoRef.current.paused) {
+                    modalVideoRef.current.play();
+                    setIsVideoPlaying(true);
+                  } else {
+                    modalVideoRef.current.pause();
+                    setIsVideoPlaying(false);
+                  }
+                }
+              }}
+              onTimeUpdate={() => {
+                if (modalVideoRef.current && modalVideoRef.current.duration) {
+                  const pct = (modalVideoRef.current.currentTime / modalVideoRef.current.duration) * 100;
+                  setModalVideoProgress(pct);
+                }
+              }}
             />
-            <div className="absolute top-4 left-4 right-4 flex items-center justify-between text-white drop-shadow">
-              <span className="text-xs font-bold">{selectedVideo.title}</span>
+
+            {/* Icono de pausa flotante cuando esta pausado */}
+            {!isVideoPlaying && (
+              <div 
+                onClick={() => {
+                  if (modalVideoRef.current) {
+                    modalVideoRef.current.play();
+                    setIsVideoPlaying(true);
+                  }
+                }}
+                className="absolute inset-0 flex items-center justify-center bg-black/30 z-10 cursor-pointer pointer-events-auto"
+              >
+                <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/20 text-white shadow-xl hover:scale-110 transition-transform">
+                  <Play className="w-8 h-8 fill-white ml-1" />
+                </div>
+              </div>
+            )}
+
+            {/* Gradientes cinematograficos para contraste */}
+            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/85 via-black/30 to-transparent pointer-events-none z-10"></div>
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/95 via-black/50 to-transparent pointer-events-none z-10"></div>
+
+            {/* Cabecera superior del reproductor */}
+            <div className="relative z-20 flex items-center justify-between p-4">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-bold tracking-wider text-white border border-white/10 uppercase">
+                  4K HDR · Follow
+                </span>
+                <button
+                  onClick={() => setIsVideoMuted(!isVideoMuted)}
+                  className="p-1.5 rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 transition-colors border border-white/10 flex items-center gap-1.5 px-2.5 text-[10px] font-medium"
+                >
+                  {isVideoMuted ? (
+                    <>
+                      <VolumeX className="w-3.5 h-3.5 text-pink-400" />
+                      <span>Silenciado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Sonido activo</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               <button
                 onClick={() => setSelectedVideo(null)}
-                className="px-2 py-1 rounded bg-white/20 text-xs font-bold"
+                className="p-2 rounded-full bg-black/60 backdrop-blur-md text-gray-300 hover:text-white hover:bg-black/80 transition-all border border-white/10"
+                title="Cerrar visor (Escape)"
               >
-                Cerrar
+                <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Barra lateral de acciones sociales (derecha) */}
+            <div className="absolute right-3 bottom-14 z-20 flex flex-col items-center gap-3">
+              {/* Avatar creador con boton seguir */}
+              <div className="relative mb-1">
+                <img
+                  src={profileData.avatar}
+                  alt={profileData.fullName}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-pink-500 shadow-md"
+                />
+                <button
+                  onClick={() => setIsFollowing(!isFollowing)}
+                  className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow ${
+                    isFollowing ? 'bg-cyan-500 text-black' : 'bg-pink-600 text-white'
+                  }`}
+                >
+                  {isFollowing ? <Check className="w-2.5 h-2.5" /> : <Plus className="w-2.5 h-2.5" />}
+                </button>
+              </div>
+
+              {/* Me Gusta */}
+              <button
+                onClick={() => {
+                  setModalLikedMap(prev => ({ ...prev, [selectedVideo.id]: !prev[selectedVideo.id] }));
+                }}
+                className="flex flex-col items-center gap-0.5 group"
+              >
+                <div className={`p-2.5 rounded-full backdrop-blur-md border transition-transform group-hover:scale-110 ${
+                  modalLikedMap[selectedVideo.id]
+                    ? 'bg-rose-500/30 text-rose-400 border-rose-500/40'
+                    : 'bg-black/50 text-white border-white/10 hover:bg-black/70'
+                }`}>
+                  <Heart className={`w-5 h-5 ${modalLikedMap[selectedVideo.id] ? 'fill-rose-400 text-rose-400' : ''}`} />
+                </div>
+                <span className="text-[10px] font-bold text-white shadow-sm">
+                  {modalLikedMap[selectedVideo.id] ? '411K' : selectedVideo.likes}
+                </span>
+              </button>
+
+              {/* Comentarios */}
+              <button className="flex flex-col items-center gap-0.5 group">
+                <div className="p-2.5 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/10 hover:bg-black/70 transition-transform group-hover:scale-110">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-white shadow-sm">1.4K</span>
+              </button>
+
+              {/* Guardar en coleccion */}
+              <button
+                onClick={() => {
+                  setModalBookmarksMap(prev => ({ ...prev, [selectedVideo.id]: !prev[selectedVideo.id] }));
+                }}
+                className="flex flex-col items-center gap-0.5 group"
+              >
+                <div className={`p-2.5 rounded-full backdrop-blur-md border transition-transform group-hover:scale-110 ${
+                  modalBookmarksMap[selectedVideo.id]
+                    ? 'bg-yellow-500/30 text-yellow-400 border-yellow-500/40'
+                    : 'bg-black/50 text-white border-white/10 hover:bg-black/70'
+                }`}>
+                  <Bookmark className={`w-5 h-5 ${modalBookmarksMap[selectedVideo.id] ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                </div>
+                <span className="text-[10px] font-bold text-white shadow-sm">Guardar</span>
+              </button>
+
+              {/* Compartir */}
+              <button
+                onClick={() => {
+                  handleCopyProfileLink();
+                }}
+                className="flex flex-col items-center gap-0.5 group"
+              >
+                <div className="p-2.5 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/10 hover:bg-black/70 transition-transform group-hover:scale-110">
+                  <Share2 className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-white shadow-sm">
+                  {copiedLink ? 'Copiado' : 'Compartir'}
+                </span>
+              </button>
+
+              {/* Disco de musica girando */}
+              <div className="w-8 h-8 rounded-full bg-black/80 border border-white/20 p-1 flex items-center justify-center animate-spin-slow">
+                <Music2 className="w-4 h-4 text-cyan-400" />
+              </div>
+            </div>
+
+            {/* Informacion inferior del video */}
+            <div className="relative z-20 p-4 space-y-2 max-w-[80%]">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-white">@{profileData.username}</span>
+                <CheckCircle className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400/20" />
+                <span className="text-[9px] font-semibold text-gray-400">· 2d</span>
+              </div>
+
+              <h3 className="text-xs font-semibold text-white line-clamp-1">{selectedVideo.title}</h3>
+              {selectedVideo.description && (
+                <p className="text-[11px] text-gray-300 line-clamp-2 leading-relaxed">
+                  {selectedVideo.description}
+                </p>
+              )}
+
+              {selectedVideo.tags && (
+                <div className="flex items-center gap-1 flex-wrap pt-0.5">
+                  {selectedVideo.tags.map(tag => (
+                    <span key={tag} className="text-[10px] font-semibold text-pink-400 hover:underline cursor-pointer">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center gap-1.5 text-[11px] text-gray-300 pt-1">
+                <Music2 className="w-3 h-3 text-cyan-400 animate-pulse flex-shrink-0" />
+                <span className="truncate">{selectedVideo.soundTitle || 'Original Sound - Valeria Studio'}</span>
+              </div>
+            </div>
+
+            {/* Barra de progreso de reproduccion inferior */}
+            <div className="relative z-20 w-full h-1 bg-white/20">
+              <div 
+                className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-100"
+                style={{ width: `${modalVideoProgress}%` }}
+              ></div>
+            </div>
+
           </div>
         </div>
       )}

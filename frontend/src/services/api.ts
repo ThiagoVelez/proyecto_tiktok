@@ -108,8 +108,13 @@ export const getForYouFeed = async (): Promise<Video[]> => {
       headers: getHeaders(),
     });
     const result = await res.json();
-    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-      return result.data;
+    if (result.success && result.data) {
+      if (Array.isArray(result.data.items) && result.data.items.length > 0) {
+        return result.data.items;
+      }
+      if (Array.isArray(result.data) && result.data.length > 0) {
+        return result.data;
+      }
     }
   } catch (error) {
     console.warn('Error al obtener feed de videos, usando fallback local:', error);
@@ -122,7 +127,7 @@ export const getForYouFeed = async (): Promise<Video[]> => {
       user_id: 7,
       title: 'Configurando el nuevo setup holográfico para streaming nocturno',
       description: 'Configurando el nuevo setup holográfico para streaming nocturno. ¿Qué opinan de esta distribución? #aesthetic #techtrends #creativelife #cyberpunk',
-      video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+      video_url: '/videos/cyber_street.mp4',
       thumbnail_url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600',
       duration_seconds: 34,
       views_count: 3481200,
