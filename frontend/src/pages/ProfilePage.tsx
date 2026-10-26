@@ -13,6 +13,7 @@ import {
   ChevronLeft, Send, Sparkles, Upload, Copy, Check, Shield, 
   Eye, Folder, ArrowRight, Volume2, VolumeX, MessageSquare
 } from 'lucide-react';
+import { SettingsModal } from '../components/settings/SettingsModal';
 
 interface HighlightStory {
   id: string;
@@ -953,64 +954,11 @@ export const ProfilePage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL 4: AJUSTES DE CUENTA (SETTINGS) */}
-      {showSettingsModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setShowSettingsModal(false)}
-        >
-          <div
-            className="relative w-full max-w-md rounded-3xl bg-[#141524] border border-white/10 shadow-2xl p-6 space-y-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-2 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Settings className="w-4 h-4 text-gray-400" />
-                <h3 className="text-sm font-bold text-white">Configuracion de Cuenta</h3>
-              </div>
-              <button onClick={() => setShowSettingsModal(false)} className="text-gray-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-2xl bg-[#1b1c2e] border border-white/5 flex items-center justify-between">
-                <div>
-                  <span className="text-white font-semibold block">Cuenta Privada</span>
-                  <span className="text-[10px] text-gray-400">Solo seguidores aprobados ven tus publicaciones</span>
-                </div>
-                <span className="text-pink-400 font-mono font-bold">Desactivado</span>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-[#1b1c2e] border border-white/5 flex items-center justify-between">
-                <div>
-                  <span className="text-white font-semibold block">Cifrado de Sesion 256-bit</span>
-                  <span className="text-[10px] text-gray-400">Proteccion criptografica activa</span>
-                </div>
-                <Shield className="w-4 h-4 text-cyan-400" />
-              </div>
-
-              <div className="p-3 rounded-2xl bg-[#1b1c2e] border border-white/5 flex items-center justify-between">
-                <div>
-                  <span className="text-white font-semibold block">Notificaciones Push</span>
-                  <span className="text-[10px] text-gray-400">Alertas de transmisiones y actividad</span>
-                </div>
-                <span className="text-emerald-400 font-mono font-bold">Activo</span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setShowSettingsModal(false);
-                navigate('/login');
-              }}
-              className="w-full py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-bold transition-colors"
-            >
-              Cerrar Sesion
-            </button>
-          </div>
-        </div>
-      )}
+      {/* MODAL 4: AJUSTES Y CONFIGURACION FUNCIONAL COMPLETA (SETTINGS) */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+      />
 
       {/* VISOR MODAL DE HISTORIAS DESTACADAS (STORIES VIEWER) */}
       {activeStoryIndex !== null && (

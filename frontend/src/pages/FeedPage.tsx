@@ -222,30 +222,6 @@ export const FeedPage: React.FC = () => {
             </div>
           </div>
 
-          {/* ALCANCE EN TIEMPO REAL */}
-          <div className="p-4 rounded-3xl bg-[#141524] border border-white/5 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-400 font-medium">ALCANCE EN TIEMPO REAL</span>
-              <span className="text-rose-400 font-bold font-mono">+28.4%</span>
-            </div>
-
-            <div className="h-14 w-full pt-1">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 160 40">
-                <path
-                  d="M 0 35 Q 40 33, 70 28 T 120 18 T 160 8"
-                  fill="none"
-                  stroke="#ec4899"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-
-            <p className="text-[10px] text-gray-500">
-              Feed en directo impulsado por IA
-            </p>
-          </div>
-
         </div>
 
         {/* COLUMNA CENTRAL (5 COLUMNAS): REPRODUCTOR VERTICAL TIKTOK/FOLLOW */}
