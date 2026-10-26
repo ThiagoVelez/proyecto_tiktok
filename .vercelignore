@@ -1,6 +1,0 @@
-Dockerfile
-backend/Dockerfile
-docker-compose.yml
-backend
-.venv
-uploads
