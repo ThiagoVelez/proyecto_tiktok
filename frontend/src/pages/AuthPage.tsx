@@ -15,8 +15,8 @@ import { login } from '../services/api';
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [username, setUsername] = useState('marcos.creator@follow.tv');
-  const [password, setPassword] = useState('supersecretpass2026');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
@@ -320,7 +320,7 @@ export const AuthPage: React.FC = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="marcos.creator@follow.tv"
+                  placeholder="Ej: valeria_creatrix o valeria@follow.io"
                   className="w-full bg-[#151624] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50"
                   required
                 />
@@ -343,7 +343,7 @@ export const AuthPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••••••"
+                  placeholder="Tu contrasena"
                   className="w-full bg-[#151624] border border-white/10 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 tracking-wider"
                   required
                 />
