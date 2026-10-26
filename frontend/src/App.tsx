@@ -22,7 +22,7 @@ const AppContent: React.FC = () => {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/registro';
 
   return (
-    <div className="min-h-screen bg-[#0c0d14] text-white flex flex-col justify-between selection:bg-pink-500 selection:text-white">
+    <div className="min-h-screen min-h-[100dvh] bg-[#0c0d14] text-white flex flex-col justify-between selection:bg-pink-500 selection:text-white overflow-x-hidden">
       {!isAuthPage && <Navbar />}
 
       <main className="flex-1 w-full">

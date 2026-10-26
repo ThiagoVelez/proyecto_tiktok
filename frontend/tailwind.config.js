@@ -27,6 +27,9 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
+      screens: {
+        'xs': '420px',
+      },
       boxShadow: {
         'neon': '0 0 20px rgba(236, 72, 153, 0.35)',
         'cyan-glow': '0 0 15px rgba(0, 242, 254, 0.3)',

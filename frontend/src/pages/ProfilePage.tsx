@@ -71,6 +71,49 @@ export const ProfilePage: React.FC = () => {
   const [modalLikedMap, setModalLikedMap] = useState<Record<number, boolean>>({});
   const [modalBookmarksMap, setModalBookmarksMap] = useState<Record<number, boolean>>({});
   const modalVideoRef = useRef<HTMLVideoElement>(null);
+  const modalTouchStartX = useRef<number | null>(null);
+  const modalTouchStartY = useRef<number | null>(null);
+
+  // Soporte de navegacion por gestos tactiles (Swipe horizontal y vertical) en el modal de video
+  const handleModalTouchStart = (e: React.TouchEvent) => {
+    modalTouchStartX.current = e.touches[0].clientX;
+    modalTouchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleModalTouchEnd = (e: React.TouchEvent) => {
+    if (modalTouchStartX.current === null || modalTouchStartY.current === null || !selectedVideo) return;
+    const deltaX = modalTouchStartX.current - e.changedTouches[0].clientX;
+    const deltaY = modalTouchStartY.current - e.changedTouches[0].clientY;
+
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+      if (deltaY > 45) {
+        // Deslizar arriba -> siguiente video
+        const currentIndex = reelsVideos.findIndex(v => v.id === selectedVideo.id);
+        const nextIndex = (currentIndex + 1) % reelsVideos.length;
+        setSelectedVideo(reelsVideos[nextIndex]);
+      } else if (deltaY < -45) {
+        // Deslizar abajo -> video anterior
+        const currentIndex = reelsVideos.findIndex(v => v.id === selectedVideo.id);
+        const prevIndex = (currentIndex - 1 + reelsVideos.length) % reelsVideos.length;
+        setSelectedVideo(reelsVideos[prevIndex]);
+      }
+    } else {
+      if (deltaX > 45) {
+        // Deslizar izquierda -> siguiente video
+        const currentIndex = reelsVideos.findIndex(v => v.id === selectedVideo.id);
+        const nextIndex = (currentIndex + 1) % reelsVideos.length;
+        setSelectedVideo(reelsVideos[nextIndex]);
+      } else if (deltaX < -45) {
+        // Deslizar derecha -> video anterior
+        const currentIndex = reelsVideos.findIndex(v => v.id === selectedVideo.id);
+        const prevIndex = (currentIndex - 1 + reelsVideos.length) % reelsVideos.length;
+        setSelectedVideo(reelsVideos[prevIndex]);
+      }
+    }
+
+    modalTouchStartX.current = null;
+    modalTouchStartY.current = null;
+  };
 
   // Datos Editables del Perfil
   const [profileData, setProfileData] = useState({
@@ -346,12 +389,12 @@ export const ProfilePage: React.FC = () => {
     <div className="min-h-screen bg-[#0c0d14] text-white pb-28 pt-4 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
       
       {/* SECCION CABECERA DEL PERFIL */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pt-4 pb-8">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 sm:gap-8 pt-4 pb-6">
         
         {/* AVATAR E INFORMACION DE VALERIA */}
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-tr from-purple-600 via-pink-500 to-cyan-400 shadow-lg shadow-pink-500/20">
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="relative flex-shrink-0">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-tr from-purple-600 via-pink-500 to-cyan-400 shadow-lg shadow-pink-500/20">
               <img
                 src={profileData.avatar}
                 alt={profileData.fullName}
@@ -360,24 +403,26 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{profileData.fullName}</h1>
-              <CheckCircle className="w-4 h-4 text-cyan-400 fill-cyan-400/20" />
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-purple-900/60 text-purple-300 border border-purple-500/30 rounded-md tracking-wider">
+          <div className="space-y-1 sm:space-y-1.5">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-white">{profileData.fullName}</h1>
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 fill-cyan-400/20" />
+              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase px-1.5 sm:px-2 py-0.5 bg-purple-900/60 text-purple-300 border border-purple-500/30 rounded-md tracking-wider">
                 PRO CREATOR
               </span>
             </div>
             <p className="text-xs text-gray-400 font-medium">@{profileData.username}</p>
 
             <div className="text-xs text-gray-300 space-y-1 pt-1">
-              <p className="flex items-center gap-1.5 flex-wrap">
+              <p className="flex items-center gap-1.5 flex-wrap text-[11px] sm:text-xs">
                 <span className="text-pink-400 font-bold">#</span>
                 <span>Directora de arte & creadora digital</span>
-                <span className="text-gray-600">|</span>
-                <Headphones className="w-3.5 h-3.5 text-gray-400 inline" />
-                <span>Tech & Urban Lifestyle</span>
-                <span className="text-gray-600">|</span>
+                <span className="text-gray-600 hidden sm:inline">|</span>
+                <span className="hidden sm:inline-flex items-center gap-1">
+                  <Headphones className="w-3.5 h-3.5 text-gray-400 inline" />
+                  <span>Tech & Urban Lifestyle</span>
+                  <span className="text-gray-600">|</span>
+                </span>
                 <span>Collabs: <a href={`mailto:${profileData.emailCollab}`} className="text-cyan-400 hover:underline">{profileData.emailCollab}</a></span>
                 <span className="text-gray-600">|</span>
                 <MapPin className="w-3.5 h-3.5 text-rose-400 inline" />
@@ -385,12 +430,12 @@ export const ProfilePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 pt-1 text-[11px] text-gray-400">
-              <span className="flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+            <div className="flex items-center gap-2 sm:gap-3 pt-1 text-[10px] sm:text-[11px] text-gray-400 flex-wrap">
+              <span className="flex items-center gap-1 bg-white/5 px-2.5 py-0.5 sm:py-1 rounded-full border border-white/5">
                 <Music2 className="w-3 h-3 text-cyan-400" />
                 Sonido original #CyberVibe
               </span>
-              <span className="flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
+              <span className="flex items-center gap-1 bg-white/5 px-2.5 py-0.5 sm:py-1 rounded-full border border-white/5">
                 <VideoIcon className="w-3 h-3 text-pink-400" />
                 1.4K Shorts creados
               </span>
@@ -399,34 +444,34 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         {/* CONTADORES (SIGUIENDO, SEGUIDORES, ME GUSTA) */}
-        <div className="flex items-center gap-3 bg-[#131522] p-3 rounded-2xl border border-white/5 shadow-inner">
-          <div className="text-center px-4">
-            <span className="block text-lg font-bold text-white">348</span>
-            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Siguiendo</span>
+        <div className="flex items-center justify-around sm:justify-center gap-2 sm:gap-3 bg-[#131522] p-2.5 sm:p-3 rounded-2xl border border-white/5 shadow-inner w-full md:w-auto">
+          <div className="text-center px-2 sm:px-4">
+            <span className="block text-base sm:text-lg font-bold text-white">348</span>
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-medium">Siguiendo</span>
           </div>
-          <div className="w-px h-8 bg-white/10"></div>
-          <div className="text-center px-4">
-            <span className="block text-lg font-bold text-white">2.4M</span>
-            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Seguidores</span>
+          <div className="w-px h-7 sm:h-8 bg-white/10"></div>
+          <div className="text-center px-2 sm:px-4">
+            <span className="block text-base sm:text-lg font-bold text-white">2.4M</span>
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-medium">Seguidores</span>
           </div>
-          <div className="w-px h-8 bg-white/10"></div>
-          <div className="text-center px-4">
-            <span className="block text-lg font-bold text-white">18.9M</span>
-            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Me Gusta</span>
+          <div className="w-px h-7 sm:h-8 bg-white/10"></div>
+          <div className="text-center px-2 sm:px-4">
+            <span className="block text-base sm:text-lg font-bold text-white">18.9M</span>
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-400 font-medium">Me Gusta</span>
           </div>
         </div>
 
       </div>
 
-      {/* BOTONES DE ACCION (Totalmente interactivos) */}
-      <div className="flex items-center gap-3 pb-8 flex-wrap">
+      {/* BOTONES DE ACCION (Totalmente interactivos y adaptables a 2 columnas en movil) */}
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 pb-8 w-full">
         
         {/* Editar perfil */}
         <button
           onClick={() => setShowEditProfileModal(true)}
-          className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-semibold shadow-lg shadow-pink-500/20 hover:brightness-110 active:scale-95 transition-all"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-semibold shadow-lg shadow-pink-500/20 hover:brightness-110 active:scale-95 transition-all"
         >
-          <Pencil className="w-3.5 h-3.5" />
+          <Pencil className="w-3.5 h-3.5 flex-shrink-0" />
           <span>Editar perfil</span>
         </button>
 
@@ -434,9 +479,9 @@ export const ProfilePage: React.FC = () => {
         <button 
           type="button"
           onClick={() => setShowShareModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#171926] hover:bg-[#202334] text-gray-300 hover:text-white text-xs font-semibold border border-white/5 transition-all"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-xl bg-[#171926] hover:bg-[#202334] text-gray-300 hover:text-white text-xs font-semibold border border-white/5 active:scale-95 transition-all"
         >
-          <Share2 className="w-3.5 h-3.5" />
+          <Share2 className="w-3.5 h-3.5 flex-shrink-0" />
           <span>Compartir perfil</span>
         </button>
 
@@ -444,10 +489,10 @@ export const ProfilePage: React.FC = () => {
         <button 
           type="button"
           onClick={() => setShowStatsModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#171926] hover:bg-[#202334] text-gray-300 hover:text-white text-xs font-semibold border border-white/5 transition-all"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-xl bg-[#171926] hover:bg-[#202334] text-gray-300 hover:text-white text-xs font-semibold border border-white/5 active:scale-95 transition-all"
         >
-          <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Estadisticas de creador</span>
+          <TrendingUp className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+          <span>Estadisticas</span>
         </button>
 
         {/* Configuracion */}
@@ -455,9 +500,10 @@ export const ProfilePage: React.FC = () => {
           type="button"
           onClick={() => setShowSettingsModal(true)}
           aria-label="Configuracion"
-          className="p-2 rounded-xl bg-[#171926] hover:bg-[#202334] text-gray-400 hover:text-white border border-white/5 transition-all"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-xl bg-[#171926] hover:bg-[#202334] text-gray-400 hover:text-white border border-white/5 active:scale-95 transition-all"
         >
-          <Settings className="w-4 h-4" />
+          <Settings className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="sm:hidden text-xs font-semibold text-gray-300">Ajustes</span>
         </button>
       </div>
 
@@ -1187,7 +1233,9 @@ export const ProfilePage: React.FC = () => {
           </button>
 
           <div 
-            className="relative max-w-sm w-full aspect-[9/16] max-h-[90vh] rounded-[28px] overflow-hidden bg-black border border-white/15 shadow-2xl"
+            onTouchStart={handleModalTouchStart}
+            onTouchEnd={handleModalTouchEnd}
+            className="relative max-w-sm w-full aspect-[9/16] h-[calc(100dvh-5rem)] max-h-[88dvh] rounded-2xl sm:rounded-[28px] overflow-hidden bg-black border border-white/15 shadow-2xl select-none"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Reproductor de Video con fallback garantizado a poster de alta definicion */}

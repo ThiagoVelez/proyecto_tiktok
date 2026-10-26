@@ -442,7 +442,7 @@ export const StudioPage: React.FC = () => {
               </div>
 
               {/* Balances de Audio y Boton Mezclador */}
-              <div className="flex items-center justify-between text-xs text-gray-300 pt-1">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-300 pt-1">
                 <span className="font-mono text-gray-400">Volumen clip: {clipVolume}%</span>
                 <span className="font-mono text-gray-400">Musica: {musicVolume}%</span>
                 <button
@@ -507,7 +507,7 @@ export const StudioPage: React.FC = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={100}
-                  className="w-full bg-[#1b1c2e] border border-white/10 rounded-2xl px-4 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
+                  className="w-full bg-[#1b1c2e] border border-white/10 rounded-2xl px-4 py-3 text-base sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
                 />
               </div>
 
@@ -522,7 +522,7 @@ export const StudioPage: React.FC = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   maxLength={2200}
-                  className="w-full bg-[#1b1c2e] border border-white/10 rounded-2xl p-4 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 leading-relaxed resize-none"
+                  className="w-full bg-[#1b1c2e] border border-white/10 rounded-2xl p-4 text-base sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 leading-relaxed resize-none"
                 />
               </div>
 

@@ -62,8 +62,8 @@ export const AuthPage: React.FC = () => {
       {/* CONTENEDOR PRINCIPAL DOS COLUMNAS */}
       <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center my-auto py-6">
         
-        {/* COLUMNA IZQUIERDA: MOCKUP SMARTPHONE STREAMING EN VIVO */}
-        <div className="lg:col-span-6 flex flex-col items-center">
+        {/* COLUMNA IZQUIERDA: MOCKUP SMARTPHONE STREAMING EN VIVO (Visible en pantallas medianas y superiores) */}
+        <div className="lg:col-span-6 hidden md:flex flex-col items-center">
           <div className="relative w-full max-w-[340px] aspect-[9/18] rounded-[38px] p-2.5 bg-gradient-to-b from-[#24273d] to-[#12131d] shadow-2xl shadow-purple-950/40 border border-white/10 overflow-hidden">
             
             {/* Pantalla interna del teléfono */}
@@ -321,7 +321,7 @@ export const AuthPage: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Ej: valeria_creatrix o valeria@follow.io"
-                  className="w-full bg-[#151624] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50"
+                  className="w-full bg-[#151624] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-base sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50"
                   required
                 />
               </div>
@@ -344,7 +344,7 @@ export const AuthPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Tu contrasena"
-                  className="w-full bg-[#151624] border border-white/10 rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 tracking-wider"
+                  className="w-full bg-[#151624] border border-white/10 rounded-xl pl-10 pr-10 py-3 text-base sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 tracking-wider"
                   required
                 />
                 <button

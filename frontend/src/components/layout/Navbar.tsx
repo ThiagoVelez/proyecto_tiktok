@@ -140,11 +140,11 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* ACCIONES Y PERFIL DE USUARIO */}
-          <div className="flex items-center gap-3">
-            {/* Boton + Crear */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Boton + Crear (visible en pantallas medianas y grandes, en movil reside en BottomNav) */}
             <Link
               to="/estudio"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 text-white text-xs font-semibold shadow-lg shadow-pink-500/20 hover:brightness-110 active:scale-95 transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 text-white text-xs font-semibold shadow-lg shadow-pink-500/20 hover:brightness-110 active:scale-95 transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Crear</span>
@@ -155,7 +155,7 @@ export const Navbar: React.FC = () => {
               type="button"
               onClick={() => setIsMessagesOpen(true)}
               aria-label="Mensajes directos"
-              className="p-2 text-gray-300 hover:text-white rounded-full hover:bg-white/5 transition-colors relative"
+              className="p-2 text-gray-300 hover:text-white rounded-full hover:bg-white/5 transition-colors relative active:scale-95"
             >
               <Send className="w-4 h-4" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan-400 ring-2 ring-[#0c0d14]"></span>
@@ -165,14 +165,14 @@ export const Navbar: React.FC = () => {
             <Link
               to="/actividad"
               aria-label="Notificaciones"
-              className="p-2 text-gray-300 hover:text-white rounded-full hover:bg-white/5 transition-colors relative"
+              className="p-2 text-gray-300 hover:text-white rounded-full hover:bg-white/5 transition-colors relative active:scale-95"
             >
               <Bell className="w-4 h-4" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-pink-500 ring-2 ring-[#0c0d14]"></span>
             </Link>
 
             {/* Avatar del usuario con Menu Desplegable Interactivo */}
-            <div className="relative ml-1" ref={profileMenuRef}>
+            <div className="relative ml-0.5" ref={profileMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsProfileMenuOpen(prev => !prev)}
@@ -189,7 +189,7 @@ export const Navbar: React.FC = () => {
 
               {/* Menu flotante de perfil */}
               {isProfileMenuOpen && (
-                <div className="absolute right-0 top-full mt-2.5 w-72 rounded-2xl bg-[#141524] border border-white/10 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 top-full mt-2.5 w-72 max-w-[calc(100vw-2rem)] rounded-2xl bg-[#141524] border border-white/10 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                   {/* Cabecera del usuario */}
                   <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5">
                     <img

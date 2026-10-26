@@ -179,7 +179,7 @@ export const ExplorePage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar en Follow..."
-            className="w-full bg-[#151726] border border-white/5 rounded-2xl pl-11 pr-10 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all font-medium"
+            className="w-full bg-[#151726] border border-white/5 rounded-2xl pl-11 pr-10 py-3 text-base sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all font-medium"
           />
           {searchQuery && (
             <button

@@ -332,7 +332,7 @@ export const LivePage: React.FC = () => {
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="Envia un mensaje en el directo..."
-              className="w-full bg-[#1b1c2e] border border-white/10 rounded-2xl pl-4 pr-11 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50"
+              className="w-full bg-[#1b1c2e] border border-white/10 rounded-2xl pl-4 pr-11 py-2.5 text-base sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50"
             />
             <button
               type="submit"

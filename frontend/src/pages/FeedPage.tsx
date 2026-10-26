@@ -28,6 +28,27 @@ export const FeedPage: React.FC = () => {
   const [showComments, setShowComments] = useState(true);
   const [isFollowingCreator, setIsFollowingCreator] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  // Soporte para gestos táctiles de deslizamiento (Swipe Up / Down) en dispositivos móviles
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchStartY.current - touchEndY;
+    // Umbral de 45px para cambiar de video mediante gesto natural de swipe
+    if (diff > 45) {
+      // Deslizar hacia arriba -> Siguiente video
+      setCurrentIndex((prev) => (prev + 1) % (videos.length || 1));
+    } else if (diff < -45) {
+      // Deslizar hacia abajo -> Video anterior
+      setCurrentIndex((prev) => (prev - 1 + (videos.length || 1)) % (videos.length || 1));
+    }
+    touchStartY.current = null;
+  };
 
   // Cargar feed de videos inicial
   useEffect(() => {
@@ -110,6 +131,111 @@ export const FeedPage: React.FC = () => {
       avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'
     }
   };
+
+  // Renderizado unificado de comentarios para panel de escritorio y bottom-sheet móvil
+  const renderCommentsContent = () => (
+    <>
+      {/* Cabecera de Comentarios */}
+      <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-pink-400" />
+          <h3 className="text-xs font-bold text-white">Comentarios</h3>
+          <span className="text-xs text-gray-400 font-mono">34,812</span>
+        </div>
+
+        <div className="flex items-center gap-1 text-gray-400">
+          <button className="p-1 rounded hover:text-white transition-colors">
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={() => setShowComments(false)} className="p-1.5 rounded-full hover:bg-white/10 hover:text-white transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de Comentarios Scrollable */}
+      <div className="flex-1 overflow-y-auto py-3 space-y-4 pr-1 min-h-[160px] max-h-[48vh] lg:max-h-[380px]">
+        {comments.map((c) => {
+          const commentAuthor = c.user || (c as any).author || {
+            username: 'usuario',
+            avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+            is_verified: false
+          };
+          const likesFormatted = typeof c.likes_count === 'number' ? c.likes_count.toLocaleString() : '0';
+          return (
+            <div key={c.id} className="space-y-1 text-xs">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2.5">
+                  <img 
+                    src={commentAuthor.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
+                    alt={commentAuthor.username || 'Usuario'} 
+                    className="w-7 h-7 rounded-full object-cover flex-shrink-0" 
+                  />
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-white">{commentAuthor.username || 'usuario'}</span>
+                      {commentAuthor.is_verified && <CheckCircle className="w-3 h-3 text-cyan-400 inline" />}
+                      {c.is_pinned && (
+                        <span className="text-[9px] font-extrabold uppercase px-1.5 bg-pink-600/30 text-pink-300 rounded border border-pink-500/30">
+                          CREADOR
+                        </span>
+                      )}
+                      <span className="text-[10px] text-gray-500 ml-1">{c.created_at || 'Reciente'}</span>
+                    </div>
+                    <p className="text-gray-200 text-xs mt-1 leading-snug">{c.content}</p>
+
+                    <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
+                      {c.is_pinned && (
+                        <span className="flex items-center gap-1 text-pink-400 font-semibold">
+                          <Pin className="w-3 h-3" />
+                          Fijado
+                        </span>
+                      )}
+                      <button className="hover:text-white font-medium">Responder</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Likes del comentario */}
+                <button className="flex flex-col items-center text-gray-400 hover:text-rose-400 flex-shrink-0">
+                  <Heart className="w-3.5 h-3.5" />
+                  <span className="text-[10px] font-mono">{likesFormatted}</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Reacciones Rápidas con Iconos Profesionales Lucide */}
+      <div className="py-2 border-t border-white/5 flex items-center justify-between text-gray-400">
+        <button className="p-1 hover:text-rose-400 hover:scale-110 transition-all"><Heart className="w-4 h-4 fill-rose-500/20" /></button>
+        <button className="p-1 hover:text-amber-400 hover:scale-110 transition-all"><Flame className="w-4 h-4" /></button>
+        <button className="p-1 hover:text-yellow-400 hover:scale-110 transition-all"><Trophy className="w-4 h-4" /></button>
+        <button className="p-1 hover:text-cyan-400 hover:scale-110 transition-all"><Sparkles className="w-4 h-4" /></button>
+        <button className="p-1 hover:text-purple-400 hover:scale-110 transition-all"><Wand2 className="w-4 h-4" /></button>
+        <button className="p-1 hover:text-pink-400 hover:scale-110 transition-all"><Smile className="w-4 h-4" /></button>
+      </div>
+
+      {/* Formulario de Entrada de Comentario */}
+      <form onSubmit={handleCommentSubmit} className="relative pt-1">
+        <input
+          type="text"
+          value={newCommentText}
+          onChange={(e) => setNewCommentText(e.target.value)}
+          placeholder="Añade un comentario para Valeria..."
+          className="w-full bg-[#1c1e2f] border border-white/10 rounded-2xl pl-4 pr-11 py-2.5 text-base sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
+        />
+        <button
+          type="submit"
+          disabled={!newCommentText.trim()}
+          className="absolute right-1.5 top-2.5 p-1.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white disabled:opacity-40 transition-opacity"
+        >
+          <Send className="w-3.5 h-3.5" />
+        </button>
+      </form>
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-[#0c0d14] text-white pb-28 pt-2 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -225,8 +351,12 @@ export const FeedPage: React.FC = () => {
         </div>
 
         {/* COLUMNA CENTRAL (5 COLUMNAS): REPRODUCTOR VERTICAL TIKTOK/FOLLOW */}
-        <div className="lg:col-span-5 flex justify-center">
-          <div className="relative w-full max-w-[390px] aspect-[9/16] rounded-[32px] overflow-hidden bg-black border border-white/10 shadow-2xl flex flex-col justify-between">
+        <div className="lg:col-span-5 flex justify-center w-full">
+          <div 
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            className="relative w-full max-w-[400px] h-[calc(100dvh-8rem)] sm:h-auto sm:aspect-[9/16] rounded-2xl sm:rounded-[32px] overflow-hidden bg-black border border-white/10 shadow-2xl flex flex-col justify-between select-none"
+          >
             
             {/* Elemento de video HTML5 real con Range / Streaming */}
             <video
@@ -375,112 +505,31 @@ export const FeedPage: React.FC = () => {
           </div>
         </div>
 
-        {/* COLUMNA DERECHA (4 COLUMNAS): PANEL LATERAL DE COMENTARIOS */}
-        <div className="lg:col-span-4 bg-[#141524] rounded-3xl border border-white/5 p-4 flex flex-col justify-between h-[560px]">
-          
-          {/* Cabecera de Comentarios */}
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-pink-400" />
-              <h3 className="text-xs font-bold text-white">Comentarios</h3>
-              <span className="text-xs text-gray-400 font-mono">34,812</span>
-            </div>
-
-            <div className="flex items-center gap-1 text-gray-400">
-              <button className="p-1 rounded hover:text-white transition-colors">
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-              </button>
-              <button onClick={() => setShowComments(false)} className="p-1 rounded hover:text-white transition-colors">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
+        {/* PANEL LATERAL DE COMENTARIOS (ESCRITORIO LG) */}
+        {showComments && (
+          <div className="hidden lg:flex lg:col-span-4 bg-[#141524] rounded-3xl border border-white/5 p-4 flex-col justify-between h-[560px]">
+            {renderCommentsContent()}
           </div>
-
-          {/* Lista de Comentarios Scrollable */}
-          <div className="flex-1 overflow-y-auto py-3 space-y-4 pr-1">
-            {comments.map((c) => {
-              const commentAuthor = c.user || (c as any).author || {
-                username: 'usuario',
-                avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
-                is_verified: false
-              };
-              const likesFormatted = typeof c.likes_count === 'number' ? c.likes_count.toLocaleString() : '0';
-              return (
-                <div key={c.id} className="space-y-1 text-xs">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2.5">
-                      <img 
-                        src={commentAuthor.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
-                        alt={commentAuthor.username || 'Usuario'} 
-                        className="w-7 h-7 rounded-full object-cover flex-shrink-0" 
-                      />
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-white">{commentAuthor.username || 'usuario'}</span>
-                          {commentAuthor.is_verified && <CheckCircle className="w-3 h-3 text-cyan-400 inline" />}
-                          {c.is_pinned && (
-                            <span className="text-[9px] font-extrabold uppercase px-1.5 bg-pink-600/30 text-pink-300 rounded border border-pink-500/30">
-                              CREADOR
-                            </span>
-                          )}
-                          <span className="text-[10px] text-gray-500 ml-1">{c.created_at || 'Reciente'}</span>
-                        </div>
-                        <p className="text-gray-200 text-xs mt-1 leading-snug">{c.content}</p>
-
-                        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">
-                          {c.is_pinned && (
-                            <span className="flex items-center gap-1 text-pink-400 font-semibold">
-                              <Pin className="w-3 h-3" />
-                              Fijado
-                            </span>
-                          )}
-                          <button className="hover:text-white font-medium">Responder</button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Likes del comentario */}
-                    <button className="flex flex-col items-center text-gray-400 hover:text-rose-400 flex-shrink-0">
-                      <Heart className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-mono">{likesFormatted}</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Reacciones Rápidas con Iconos Profesionales Lucide */}
-          <div className="py-2 border-t border-white/5 flex items-center justify-between text-gray-400">
-            <button className="p-1 hover:text-rose-400 hover:scale-110 transition-all"><Heart className="w-4 h-4 fill-rose-500/20" /></button>
-            <button className="p-1 hover:text-amber-400 hover:scale-110 transition-all"><Flame className="w-4 h-4" /></button>
-            <button className="p-1 hover:text-yellow-400 hover:scale-110 transition-all"><Trophy className="w-4 h-4" /></button>
-            <button className="p-1 hover:text-cyan-400 hover:scale-110 transition-all"><Sparkles className="w-4 h-4" /></button>
-            <button className="p-1 hover:text-purple-400 hover:scale-110 transition-all"><Wand2 className="w-4 h-4" /></button>
-            <button className="p-1 hover:text-pink-400 hover:scale-110 transition-all"><Smile className="w-4 h-4" /></button>
-          </div>
-
-          {/* Formulario de Entrada de Comentario */}
-          <form onSubmit={handleCommentSubmit} className="relative pt-1">
-            <input
-              type="text"
-              value={newCommentText}
-              onChange={(e) => setNewCommentText(e.target.value)}
-              placeholder="Añade un comentario para Valeria..."
-              className="w-full bg-[#1c1e2f] border border-white/10 rounded-2xl pl-4 pr-11 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50"
-            />
-            <button
-              type="submit"
-              disabled={!newCommentText.trim()}
-              className="absolute right-1.5 top-2.5 p-1.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white disabled:opacity-40 transition-opacity"
-            >
-              <Send className="w-3.5 h-3.5" />
-            </button>
-          </form>
-
-        </div>
+        )}
 
       </div>
+
+      {/* MODAL BOTTOM SHEET DE COMENTARIOS (DISPOSITIVOS MOVILES) */}
+      {showComments && (
+        <div 
+          className="lg:hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex flex-col justify-end animate-in fade-in duration-200"
+          onClick={() => setShowComments(false)}
+        >
+          <div 
+            className="bg-[#141524] rounded-t-3xl border-t border-white/10 p-4 max-h-[82dvh] flex flex-col justify-between shadow-2xl animate-in slide-in-from-bottom duration-250 pb-safe"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Tirador visual de arrastre superior */}
+            <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-3 flex-shrink-0 cursor-pointer" />
+            {renderCommentsContent()}
+          </div>
+        </div>
+      )}
 
     </div>
   );
