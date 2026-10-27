@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { Navbar } from './components/layout/Navbar';
 import { BottomNav } from './components/layout/BottomNav';
@@ -16,6 +16,18 @@ import { ActivityPage } from './pages/ActivityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { StudioPage } from './pages/StudioPage';
 import { AuthPage } from './pages/AuthPage';
+import { getToken } from './services/api';
+
+/**
+ * Componente Guard que redirige a /login si no existe sesion iniciada.
+ */
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const token = getToken();
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
 
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -27,15 +39,65 @@ const AppContent: React.FC = () => {
 
       <main className="flex-1 w-full">
         <Routes>
-          <Route path="/" element={<FeedPage />} />
-          <Route path="/explorar" element={<ExplorePage />} />
-          <Route path="/tendencias" element={<TrendsPage />} />
-          <Route path="/en-vivo" element={<LivePage />} />
-          <Route path="/actividad" element={<ActivityPage />} />
-          <Route path="/perfil" element={<ProfilePage />} />
-          <Route path="/estudio" element={<StudioPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <FeedPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/explorar"
+            element={
+              <ProtectedRoute>
+                <ExplorePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tendencias"
+            element={
+              <ProtectedRoute>
+                <TrendsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/en-vivo"
+            element={
+              <ProtectedRoute>
+                <LivePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/actividad"
+            element={
+              <ProtectedRoute>
+                <ActivityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/perfil"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/estudio"
+            element={
+              <ProtectedRoute>
+                <StudioPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/registro" element={<AuthPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
