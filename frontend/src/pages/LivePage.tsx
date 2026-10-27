@@ -111,7 +111,7 @@ export const LivePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0d14] text-white pb-28 pt-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#0c0d14] text-white pb-36 sm:pb-20 pt-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
       
       {/* CABECERA DE LA SALA EN VIVO */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/5">
@@ -147,17 +147,32 @@ export const LivePage: React.FC = () => {
         {/* REPRODUCTOR EN VIVO (8 COLUMNAS) */}
         <div className="lg:col-span-8 space-y-4">
           
-          <div className="relative aspect-video w-full rounded-3xl overflow-hidden bg-black border border-white/10 shadow-2xl flex flex-col justify-between p-4 group">
+          <div className="relative min-h-[460px] sm:min-h-[520px] w-full rounded-3xl overflow-hidden bg-[#07080f] border border-white/10 shadow-2xl flex flex-col justify-between p-4 sm:p-5 group">
             
-            {/* Video del Stream */}
+            {/* Fondo con desenfoque ambiental (Ambient Light Backdrop) */}
             <video
+              key={`bg-${activeRoom.streamUrl}`}
               src={activeRoom.streamUrl}
               autoPlay
               loop
-              muted={isMuted}
+              muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover filter blur-3xl opacity-35 scale-110 pointer-events-none"
             />
+
+            {/* Video principal centrado con encuadre completo sin recortar */}
+            <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-6 pointer-events-none">
+              <video
+                key={`main-${activeRoom.streamUrl}`}
+                src={activeRoom.streamUrl}
+                autoPlay
+                loop
+                muted={isMuted}
+                playsInline
+                className="h-full w-auto max-w-full object-contain rounded-2xl shadow-2xl pointer-events-auto border border-white/10"
+              />
+            </div>
+
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/60 pointer-events-none"></div>
 
             {/* Cabecera del Stream */}

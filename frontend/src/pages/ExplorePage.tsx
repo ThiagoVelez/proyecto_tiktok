@@ -9,6 +9,7 @@ import {
   X, CheckCircle, TrendingUp, Play, Pause, ChevronRight, 
   Flame, Heart, Eye, Filter, ArrowUpRight
 } from 'lucide-react';
+import { VideoModal, VideoModalItem } from '../components/video/VideoModal';
 
 interface CreatorSuggestion {
   id: string;
@@ -33,6 +34,7 @@ export const ExplorePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('cyberpunk aesthetic streetwear');
   const [activeCategory, setActiveCategory] = useState<'todo' | 'cuentas' | 'videos' | 'sonidos' | 'hashtags' | 'envivo'>('todo');
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<VideoModalItem | null>(null);
 
   // Cuentas sugeridas
   const [creators, setCreators] = useState<CreatorSuggestion[]>([
@@ -99,61 +101,85 @@ export const ExplorePage: React.FC = () => {
     }
   ];
 
-  // Videos destacados
-  const featuredVideos = [
+  // Videos destacados con reproduccion multimedia
+  const featuredVideos: VideoModalItem[] = [
     {
       id: 1,
-      title: 'Top 5 marcas underground de Cyberpunk Streetwear para...',
+      title: 'Top 5 marcas underground de Cyberpunk Streetwear para 2026',
       author: '@cyber_k',
       authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=50',
       views: '1.8M',
       likes: '145K',
-      image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600'
+      image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600',
+      videoUrl: '/videos/cyber_street.mp4',
+      description: 'Analisis en profundidad de las siluetas tecnicas mas codiciadas de la escena subterranea.',
+      soundTitle: 'Original Sound - Cyber Beat Studio',
+      tags: ['#CyberpunkStyle', '#Techwear', '#Streetwear']
     },
     {
       id: 2,
-      title: 'Cómo estilizar un chaleco táctico con piezas oversize...',
+      title: 'Cómo estilizar un chaleco táctico con piezas oversize para diario',
       author: '@tactical_drip',
       authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50',
       views: '890K',
       likes: '68K',
-      image: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600'
+      image: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600',
+      videoUrl: '/videos/fashion_walk.mp4',
+      description: 'Consejos de capas y ajuste de correas para lograr silueta balanceada en entornos urbanos.',
+      soundTitle: 'Tactical Groove - Vector Sound',
+      tags: ['#TacticalFashion', '#Oversize', '#Drip']
     },
     {
       id: 3,
-      title: 'Outfit check en Akihabara a medianoche: cyberpunk pur...',
+      title: 'Outfit check en Akihabara a medianoche: cyberpunk puro y luces reactivas',
       author: '@rei_tokyo',
       authorAvatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=50',
       views: '2.3M',
       likes: '230K',
-      image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600'
+      image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600',
+      videoUrl: '/videos/city_traffic.mp4',
+      description: 'Iluminacion LED reactiva al sonido en los callejones neon de Tokio.',
+      soundTitle: 'Neon Horizon Beat - Tokyo Synth',
+      tags: ['#Akihabara', '#Cyberpunk', '#NightFits']
     },
     {
       id: 4,
-      title: 'DIY: Cómo poner luces fibra óptica en tu sudadera negra...',
+      title: 'DIY: Cómo poner luces fibra óptica en tu sudadera negra técnica',
       author: '@neon_mods',
       authorAvatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=50',
       views: '540K',
       likes: '42K',
-      image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600'
+      image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600',
+      videoUrl: '/videos/ambient_people.mp4',
+      description: 'Tutorial paso a paso con controladores USB portatiles y lavado seguro.',
+      soundTitle: 'Fiber Optic Pulse - DIY Labs',
+      tags: ['#DIY', '#WearableTech', '#Neon']
     },
     {
       id: 5,
-      title: 'Neo-Samurai: Fusión entre folclore y techwear distópic...',
+      title: 'Neo-Samurai: Fusión entre folclore y techwear distópico en Shibuya',
       author: '@ronin_fits',
       authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50',
       views: '3.1M',
       likes: '398K',
-      image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=600'
+      image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=600',
+      videoUrl: '/videos/macro_visual.mp4',
+      description: 'Capas impermeables combinadas con cortes tradicionales japoneses.',
+      soundTitle: 'Samurai Drums x 808 - Ronin Audio',
+      tags: ['#NeoSamurai', '#TechwearInspo', '#Shibuya']
     },
     {
       id: 6,
-      title: 'Unboxing de los sneakers más ciberpunk del mercado:...',
+      title: 'Unboxing de los sneakers más ciberpunk del mercado: edición limitada',
       author: '@kicks_future',
       authorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50',
       views: '970K',
       likes: '81K',
-      image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=600'
+      image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=600',
+      videoUrl: '/videos/ocean_cinematic.mp4',
+      description: 'Materiales autorreparables y suela de traccion magnetica urbana.',
+      soundTitle: 'Sneaker Head Bass - KickFuture',
+      tags: ['#Sneakers', '#CyberKicks', '#TechwearSneakers']
     }
   ];
 
@@ -414,7 +440,8 @@ export const ExplorePage: React.FC = () => {
               {featuredVideos.map((fv) => (
                 <div
                   key={fv.id}
-                  className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-[#141524] border border-white/5 hover:border-pink-500/40 cursor-pointer shadow-lg transition-all"
+                  onClick={() => setSelectedVideo(fv)}
+                  className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-[#141524] border border-white/5 hover:border-pink-500/40 cursor-pointer shadow-lg hover:shadow-pink-500/10 transition-all hover:scale-[1.01]"
                 >
                   <img src={fv.image} alt={fv.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 pointer-events-none"></div>
@@ -570,8 +597,17 @@ export const ExplorePage: React.FC = () => {
           </div>
 
         </div>
-
       </div>
+
+      {/* VISOR MODAL DE VIDEO INTERACTIVO */}
+      {selectedVideo && (
+        <VideoModal
+          video={selectedVideo}
+          videosList={featuredVideos}
+          onClose={() => setSelectedVideo(null)}
+          onSelectVideo={setSelectedVideo}
+        />
+      )}
 
     </div>
   );

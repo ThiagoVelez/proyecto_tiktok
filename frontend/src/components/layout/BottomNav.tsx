@@ -17,7 +17,7 @@ export const BottomNav: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 w-auto max-w-[calc(100vw-1rem)]">
+    <div className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 w-auto max-w-[calc(100vw-1rem)]">
       <nav className="flex items-center justify-between sm:justify-center gap-1 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#181926]/95 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/90 select-none">
         
         {/* Para ti */}
